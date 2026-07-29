@@ -48,7 +48,7 @@ export function Dashboard({ projects, selectedProject, initialCampaign, connecti
   const router = useRouter();
   const [campaign, setCampaign] = useState(initialCampaign);
   const [active, setActive] = useState<View>(initialView);
-  const [projectSetupOpen, setProjectSetupOpen] = useState(projects.length === 0);
+  const [projectSetupOpen, setProjectSetupOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<ProductProject | null>(null);
   const [composerOpen, setComposerOpen] = useState(false);
   const [mobileNav, setMobileNav] = useState(false);
@@ -264,7 +264,7 @@ export function Dashboard({ projects, selectedProject, initialCampaign, connecti
         {active === "connections" ? <ConnectionsView connections={connections} /> : !selectedProject ? <NoProject onCreate={() => setProjectSetupOpen(true)} /> : active === "calendar" ? <CalendarView posts={posts} connections={connections} onApprove={approvePost} onPublish={openPublishing} onEditPost={setEditingPost} onGenerateImage={generatePostImage} imageBusy={imageBusy} onCreateVariant={createVariant} variantBusy={variantBusy} onGenerate={() => setComposerOpen(true)} /> : active === "drafts" ? <DraftStudio posts={review} connections={connections} onApprove={approvePost} onPublish={openPublishing} onEditPost={setEditingPost} onGenerateImage={generatePostImage} imageBusy={imageBusy} onCreateVariant={createVariant} variantBusy={variantBusy} onGenerate={() => setComposerOpen(true)} onConnections={() => setActive("connections")} /> : campaign ? <Overview project={selectedProject} campaign={campaign} connections={connections} review={review} scheduled={scheduled} published={published} onApprove={approvePost} onPublish={openPublishing} onEditPost={setEditingPost} onGenerateImage={generatePostImage} imageBusy={imageBusy} onGenerate={() => setComposerOpen(true)} onEdit={() => setEditingProject(selectedProject)} onConnections={() => setActive("connections")} /> : <ProjectReady project={selectedProject} onGenerate={() => setComposerOpen(true)} onEdit={() => setEditingProject(selectedProject)} />}
       </main>
 
-      {(projectSetupOpen || editingProject) && <ProjectSetup project={editingProject} onClose={() => { if (projects.length > 0) { setProjectSetupOpen(false); setEditingProject(null); } }} onSaved={savedProject} />}
+      {(projectSetupOpen || editingProject) && <ProjectSetup project={editingProject} onClose={() => { setProjectSetupOpen(false); setEditingProject(null); }} onSaved={savedProject} />}
       {composerOpen && selectedProject && <CampaignComposer project={selectedProject} connections={connections} onClose={() => setComposerOpen(false)} onCreated={(created) => { setCampaign(created); setComposerOpen(false); setActive("drafts"); setNotice("Campaign generated from the saved product context. Review every draft before approval."); }} />}
       {editingPost && <EditPostModal post={editingPost} busy={editBusy} onClose={() => !editBusy && setEditingPost(null)} onSave={savePostCopy} />}
       {publishDecision && <PublishDecisionModal post={publishDecision} connections={connections} scheduleAt={scheduleAt} onScheduleAt={setScheduleAt} selectedDestinationId={selectedDestinationId} onDestination={setSelectedDestinationId} busy={publishBusy} onClose={() => !publishBusy && setPublishDecision(null)} onSchedule={schedulePost} onPostNow={postNow} onConnections={() => { setPublishDecision(null); setActive("connections"); }} />}
