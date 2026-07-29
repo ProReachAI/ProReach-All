@@ -289,7 +289,20 @@ function NavButton({ icon: Icon, label, active, onClick, count }: { icon: typeof
 }
 
 function NoProject({ onCreate }: { onCreate: () => void }) {
-  return <div className="onboarding-empty"><div className="empty-orbit"><Package size={30} /></div><span className="eyebrow">START WITH PRODUCT TRUTH</span><h1>Create your first project.</h1><p>Give ProReach the product, customer, positioning, proof, and voice context it needs. Every future campaign will be generated inside those factual boundaries.</p><button className="primary-button" onClick={onCreate}><Plus size={16} /> Create project</button><div className="empty-principles"><span><strong>01</strong> Product facts</span><span><strong>02</strong> Audience context</span><span><strong>03</strong> Voice guardrails</span></div></div>;
+  return <div className="onboarding-empty">
+    <div className="onboarding-ambient onboarding-ambient-one" />
+    <div className="onboarding-ambient onboarding-ambient-two" />
+    <section className="onboarding-stage">
+      <div className="empty-orbit"><Package size={30} /></div>
+      <span className="eyebrow">START WITH PRODUCT TRUTH</span>
+      <h1>Build a campaign people <em>remember.</em></h1>
+      <p>Teach ProReach your product, audience, proof, and voice once. Then turn every idea into a coordinated, on-brand campaign across every connected channel.</p>
+      <button className="primary-button" onClick={onCreate}><Plus size={16} /> Create your first project</button>
+      <div className="empty-principles"><span><strong>01</strong> Product facts</span><span><strong>02</strong> Audience context</span><span><strong>03</strong> Voice guardrails</span></div>
+    </section>
+    <aside className="onboarding-float onboarding-float-left"><span><Target size={17} /></span><div><small>PRODUCT-AWARE</small><strong>Grounded in your truth</strong></div></aside>
+    <aside className="onboarding-float onboarding-float-right"><span><Sparkles size={17} /></span><div><small>CAMPAIGN READY</small><strong>Every channel, coordinated</strong></div></aside>
+  </div>;
 }
 
 function ProjectReady({ project, onGenerate, onEdit }: { project: ProductProject; onGenerate: () => void; onEdit: () => void }) {
