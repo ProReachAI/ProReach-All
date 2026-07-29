@@ -752,3 +752,28 @@ button { color: inherit; }
 @media (prefers-reduced-motion: reduce) {
   .onboarding-ambient,.onboarding-float { animation: none; }
 }
+
+/* Soft navigation rail — blends into the cool workspace canvas */
+.app-shell .sidebar {
+  color: #302858;
+  border-right: 1px solid rgba(113,99,183,.13);
+  background:
+    radial-gradient(circle at 5% 7%,rgba(202,184,255,.52),transparent 30%),
+    radial-gradient(circle at 100% 70%,rgba(167,231,255,.48),transparent 37%),
+    linear-gradient(165deg,#f5f2ff 0%,#eef2ff 48%,#e8f7ff 100%);
+  box-shadow: 14px 0 42px rgba(72,65,126,.08);
+}
+.app-shell .sidebar::before { border-color: rgba(104,83,208,.09); box-shadow: 0 0 0 38px rgba(104,83,208,.018),0 0 0 76px rgba(34,199,232,.015); }
+.app-shell .sidebar::after { opacity: .34; background-image: linear-gradient(rgba(100,86,178,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(100,86,178,.05) 1px,transparent 1px); }
+.app-shell .brand-row { border-color: rgba(105,94,166,.14); }.app-shell .brand-row .proreach-logo-mark { box-shadow: 0 9px 24px rgba(62,51,126,.15); }
+.app-shell .nav-button { color: #716b91; }.app-shell .nav-button:hover { color: #3e356a; background: rgba(255,255,255,.58); }
+.app-shell .nav-button.active { border-color: rgba(108,85,226,.16); color: #493aa7; background: rgba(255,255,255,.86); box-shadow: inset 4px 0 #765bea,0 9px 24px rgba(83,67,164,.08); }
+.app-shell .nav-button.active svg { color: #6b52e6; }.app-shell .nav-button em { color: #665e87; background: rgba(107,82,230,.09); }.app-shell .nav-button.active em { color: #fff; background: #6b52e6; }
+.app-shell .autopilot-card { border-color: rgba(107,82,230,.16); background: linear-gradient(145deg,rgba(255,255,255,.7),rgba(232,226,255,.7)); box-shadow: 0 10px 28px rgba(80,65,151,.055); }.app-shell .autopilot-title { color: #5c47c8; }.app-shell .autopilot-card p { color: #77708f; }.app-shell .safety-row { color: #288468; }
+.app-shell .secondary-nav,.app-shell .profile-row { border-color: rgba(105,94,166,.14); }.app-shell .profile-row strong { color: #342d55; }.app-shell .profile-row small { color: #8a84a1; }.app-shell .profile-signout svg { color: #77708f; }.app-shell .profile-signout:hover { border-color: rgba(107,82,230,.16); background: rgba(255,255,255,.65); }.app-shell .profile-signout:hover svg { color: #5c46ce; }
+.app-shell .avatar { color: #fff; background: linear-gradient(145deg,#7359eb,#46a7df); box-shadow: 0 8px 22px rgba(83,67,175,.16); }
+.app-shell .mobile-close { color: #554b7d; }
+
+@media (max-width: 760px) {
+  .app-shell .sidebar { box-shadow: 18px 0 52px rgba(62,55,117,.15); }
+}

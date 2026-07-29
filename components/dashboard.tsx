@@ -234,7 +234,7 @@ export function Dashboard({ projects, selectedProject, initialCampaign, connecti
     <div className="app-shell">
       <aside className={cn("sidebar", mobileNav && "sidebar-open")}>
         <div className="brand-row">
-          <ProReachLogo light size={36} />
+          <ProReachLogo size={36} />
           <button className="mobile-close" onClick={() => setMobileNav(false)} aria-label="Close navigation"><X size={19} /></button>
         </div>
         <nav className="primary-nav" aria-label="Main navigation">
