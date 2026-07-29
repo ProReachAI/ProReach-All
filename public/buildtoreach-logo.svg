@@ -1,0 +1,38 @@
+<svg width="200" height="200" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="btr-bg" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0F172A"/>
+      <stop offset="1" stop-color="#1E293B"/>
+    </linearGradient>
+    <linearGradient id="btr-primary" x1="15" y1="15" x2="85" y2="85" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6366F1"/>
+      <stop offset="0.5" stop-color="#3B82F6"/>
+      <stop offset="1" stop-color="#10B981"/>
+    </linearGradient>
+    <linearGradient id="btr-signal" x1="50" y1="20" x2="85" y2="50" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#38BDF8"/>
+      <stop offset="1" stop-color="#34D399"/>
+    </linearGradient>
+    <filter id="glow" x="0" y="0" width="100" height="100" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Background Card -->
+  <rect width="100" height="100" rx="22" fill="url(#btr-bg)"/>
+
+  <!-- Logo Mark Group -->
+  <g transform="translate(10, 10)">
+    <!-- Monogram B + Launch Vector -->
+    <path d="M22 20H45C53.8366 20 61 27.1634 61 36C61 40.5 58.8 44.5 55.2 47.1C59.6 49.6 62.5 54.4 62.5 59.8C62.5 68.6 55.3 75.8 46.5 75.8H22V20Z" fill="url(#btr-primary)" opacity="0.12"/>
+    
+    <path d="M22 20H45C53.8366 20 61 27.1634 61 36C61 44.8366 53.8366 52 45 52H22V20Z" stroke="url(#btr-primary)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <path d="M22 47.5H46.5C55.3366 47.5 62.5 54.6634 62.5 63.5C62.5 72.3366 55.3366 79.5 46.5 79.5H22V47.5Z" stroke="url(#btr-primary)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <!-- Radiating Signal Waves (Reach Concept) -->
+    <path d="M68 30C75 37 75 49 68 56" stroke="url(#btr-signal)" stroke-width="5" stroke-linecap="round" filter="url(#glow)"/>
+    <path d="M77 22C87.5 32.5 87.5 53.5 77 64" stroke="url(#btr-signal)" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+  </g>
+</svg>
