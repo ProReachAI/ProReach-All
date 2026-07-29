@@ -43,7 +43,7 @@ export function CampaignComposer({ project, connections, onClose, onCreated }: {
   return (
     <div className="modal-backdrop" role="presentation" onMouseDown={onClose}>
       <section className="composer campaign-composer" role="dialog" aria-modal="true" aria-label="Create campaign" onMouseDown={(event) => event.stopPropagation()}>
-        <header><div><span className="eyebrow">NEW CAMPAIGN · {project.name.toUpperCase()}</span><h2>Choose this week&apos;s job.</h2><p>BuildToReach already knows the product context. Give this campaign a clear objective and focus.</p></div><button className="icon-button" onClick={onClose} aria-label="Close campaign composer"><X size={18} /></button></header>
+        <header><div><span className="eyebrow">NEW CAMPAIGN · {project.name.toUpperCase()}</span><h2>Choose this week&apos;s job.</h2><p>ProReach already knows the product context. Give this campaign a clear objective and focus.</p></div><button className="icon-button" onClick={onClose} aria-label="Close campaign composer"><X size={18} /></button></header>
         <div className="form-grid campaign-form-grid">
           <label className="wide">Campaign goal<textarea value={goal} onChange={(event) => setGoal(event.target.value)} /></label>
           <label>Timely focus or angle<span className="campaign-field-help">What makes this relevant now and the one message to emphasize.</span><textarea value={focus} onChange={(event) => setFocus(event.target.value)} maxLength={1000} placeholder="Example: Introduce the live web product ahead of the Android launch. Focus on finding the right tone and the first free rewrite." /></label>

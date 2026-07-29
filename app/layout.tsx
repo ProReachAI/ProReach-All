@@ -9,9 +9,9 @@ export const metadata: Metadata = {
   },
   description: "Plan, approve, and publish product marketing from one calm workspace.",
   icons: {
-    icon: "/logo.png",
-    shortcut: "/logo.png",
-    apple: "/logo.png",
+    icon: "/proreach-mark.svg",
+    shortcut: "/proreach-mark.svg",
+    apple: "/proreach-mark.svg",
   },
   category: "technology",
 };

@@ -37,7 +37,7 @@ const structuredData = {
       "@id": "https://proreach.in/#organization",
       name: "ProReach",
       url: "https://proreach.in",
-      logo: "https://proreach.in/logo.png",
+      logo: "https://proreach.in/proreach-mark.svg",
     },
     {
       "@type": "WebSite",

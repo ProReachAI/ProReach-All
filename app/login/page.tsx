@@ -1,7 +1,7 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, CalendarDays, Check, ShieldCheck, Sparkles } from "lucide-react";
 import { GoogleSignInButton } from "@/app/login/google-sign-in-button";
+import { ProReachLogo } from "@/components/proreach-logo";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 
 export const metadata = {
@@ -28,10 +28,7 @@ export default async function LoginPage({
       <section className="auth-panel" aria-labelledby="sign-in-title">
         <header className="auth-header">
           <Link className="auth-brand" href="/" aria-label="ProReach home">
-            <span className="auth-logo-wrap">
-              <Image src="/logo.png" alt="" width={42} height={42} priority />
-            </span>
-            <span><strong>ProReach</strong><small>Marketing agent</small></span>
+            <ProReachLogo size={42} />
           </Link>
           <Link className="auth-home-link" href="/">
             proreach.in <ArrowUpRight size={14} aria-hidden="true" />

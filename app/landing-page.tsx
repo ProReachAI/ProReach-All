@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import {
   ArrowRight,
   CalendarClock,
@@ -22,8 +21,17 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { FaLinkedinIn } from "react-icons/fa6";
+import { SiFacebook, SiInstagram, SiThreads, SiX } from "react-icons/si";
+import { ProReachLogo } from "@/components/proreach-logo";
 
-const channels = ["LinkedIn", "Instagram", "Threads", "X", "Facebook"];
+const channels = [
+  { name: "Facebook", icon: SiFacebook, className: "facebook" },
+  { name: "LinkedIn", icon: FaLinkedinIn, className: "linkedin" },
+  { name: "Instagram", icon: SiInstagram, className: "instagram" },
+  { name: "Threads", icon: SiThreads, className: "threads" },
+  { name: "X", icon: SiX, className: "x" },
+];
 
 const features = [
   {
@@ -32,6 +40,7 @@ const features = [
     title: "A source of truth for every product",
     copy: "Give ProReach your positioning, audience, proof, voice, and guardrails once. Every campaign starts from facts—not a blank prompt.",
     className: "lp-feature-context",
+    art: "context",
   },
   {
     icon: WandSparkles,
@@ -39,6 +48,7 @@ const features = [
     title: "One brief becomes a complete campaign",
     copy: "Turn a timely goal into coordinated, channel-aware drafts with a clear thesis, visual direction, and publishing plan.",
     className: "lp-feature-campaign",
+    art: "campaign",
   },
   {
     icon: Layers3,
@@ -46,6 +56,7 @@ const features = [
     title: "Native to the channel—not copied across it",
     copy: "Shape the same idea for the rhythm of LinkedIn, Instagram, Threads, X, and Facebook without losing the core message.",
     className: "lp-feature-native",
+    art: "channels",
   },
   {
     icon: ShieldCheck,
@@ -53,6 +64,7 @@ const features = [
     title: "Approval is part of the system",
     copy: "Review copy, refine the CTA, choose the destination, and approve the final version before anything can publish.",
     className: "lp-feature-approval",
+    art: "approval",
   },
   {
     icon: CalendarClock,
@@ -60,6 +72,7 @@ const features = [
     title: "A calm path from draft to published",
     copy: "See what is in review, what is scheduled, and what has shipped—without rebuilding your plan in five separate tools.",
     className: "lp-feature-calendar",
+    art: "calendar",
   },
   {
     icon: PenTool,
@@ -67,6 +80,7 @@ const features = [
     title: "Visuals that respect the brand",
     copy: "Generate campaign visuals while keeping exact logos and critical brand elements crisp, controlled, and reusable.",
     className: "lp-feature-visual",
+    art: "visual",
   },
 ];
 
@@ -133,10 +147,7 @@ export function LandingPage() {
       <div className="lp-progress" aria-hidden="true" />
       <header className="lp-nav-shell">
         <nav className="lp-nav" aria-label="Main navigation">
-          <a className="lp-brand" href="#top" aria-label="ProReach home">
-            <span><Image src="/logo.png" alt="" width={38} height={38} priority /></span>
-            <strong>ProReach</strong>
-          </a>
+          <a className="lp-brand" href="#top" aria-label="ProReach home"><ProReachLogo light size={40} /></a>
           <div className={menuOpen ? "lp-nav-links is-open" : "lp-nav-links"}>
             <a href="#product" onClick={() => setMenuOpen(false)}>Product</a>
             <a href="#workflow" onClick={() => setMenuOpen(false)}>How it works</a>
@@ -191,7 +202,7 @@ export function LandingPage() {
             </div>
             <div className="lp-window-layout">
               <aside className="lp-demo-sidebar">
-                <div className="lp-demo-logo">PR</div>
+                <div className="lp-demo-logo"><ProReachLogo compact size={27} /></div>
                 <i className="active" /><i /><i /><i /><i />
               </aside>
               <div className="lp-demo-main">
@@ -206,7 +217,7 @@ export function LandingPage() {
                 </div>
                 <div className="lp-demo-content">
                   <article className="lp-demo-post">
-                    <div className="lp-demo-post-head"><span>in</span><p><strong>LinkedIn</strong><small>Founder perspective</small></p><em>Review</em></div>
+                    <div className="lp-demo-post-head"><span><FaLinkedinIn aria-hidden="true" /></span><p><strong>LinkedIn</strong><small>Founder perspective</small></p><em>Review</em></div>
                     <h3>Your product doesn&apos;t need more content.</h3>
                     <p>It needs one clear idea, expressed with enough truth that people remember it.</p>
                     <div className="lp-copy-lines"><i /><i /><i /></div>
@@ -239,7 +250,7 @@ export function LandingPage() {
         <p>Built to carry one clear idea across every channel</p>
         <div className="lp-marquee">
           <div>
-            {[...channels, ...channels].map((channel, index) => <span key={`${channel}-${index}`}><i>{channel === "LinkedIn" ? "in" : channel[0]}</i>{channel}</span>)}
+            {[...channels, ...channels].map(({ name, icon: Icon, className }, index) => <span key={`${name}-${index}`}><i className={className}><Icon aria-hidden="true" /></i>{name}</span>)}
           </div>
         </div>
       </section>
@@ -280,12 +291,12 @@ export function LandingPage() {
           <p>A focused operating system for product marketing—not another infinite canvas of disconnected AI tools.</p>
         </div>
         <div className="lp-feature-grid">
-          {features.map(({ icon: Icon, number, title, copy, className }) => (
+          {features.map(({ icon: Icon, number, title, copy, className, art }) => (
             <article className={`lp-feature-card ${className}`} key={number} data-reveal>
               <header><span><Icon size={19} /></span><i>{number}</i></header>
               <h3>{title}</h3>
               <p>{copy}</p>
-              <div className="lp-feature-art" aria-hidden="true" />
+              <FeatureArt kind={art} />
             </article>
           ))}
         </div>
@@ -371,7 +382,7 @@ export function LandingPage() {
 
       <footer className="lp-footer">
         <div className="lp-footer-brand">
-          <a className="lp-brand" href="#top"><span><Image src="/logo.png" alt="" width={38} height={38} /></span><strong>ProReach</strong></a>
+          <a className="lp-brand" href="#top"><ProReachLogo light size={40} /></a>
           <p>Approval-first AI marketing for products worth remembering.</p>
         </div>
         <div><strong>Product</strong><a href="#product">Capabilities</a><a href="#workflow">Workflow</a><a href="#control">Approval model</a></div>
@@ -380,5 +391,48 @@ export function LandingPage() {
         <p className="lp-footer-bottom">© {new Date().getFullYear()} ProReach. Built for thoughtful growth.</p>
       </footer>
     </main>
+  );
+}
+
+function FeatureArt({ kind }: { kind: string }) {
+  if (kind === "context") return (
+    <div className="lp-feature-art lp-art-context" aria-hidden="true">
+      <div className="lp-context-core"><Sparkles size={14} /><strong>Product truth</strong></div>
+      <span>Audience</span><span>Positioning</span><span>Proof</span><span>Voice</span>
+    </div>
+  );
+  if (kind === "campaign") return (
+    <div className="lp-feature-art lp-art-campaign" aria-hidden="true">
+      <div><i /><p><strong>Launch campaign</strong><small>Turn this week&apos;s product update into a clear story.</small></p></div>
+      <span><Sparkles size={11} /> 12 drafts ready</span>
+    </div>
+  );
+  if (kind === "channels") return (
+    <div className="lp-feature-art lp-art-channels" aria-hidden="true">
+      <div><FaLinkedinIn /><i><b /><b /></i><em>Ready</em></div>
+      <div><SiInstagram /><i><b /><b /></i><em>Ready</em></div>
+      <div><SiThreads /><i><b /><b /></i><em>Ready</em></div>
+    </div>
+  );
+  if (kind === "approval") return (
+    <div className="lp-feature-art lp-art-approval" aria-hidden="true">
+      <header><FaLinkedinIn /><span>Launch narrative</span><em>Review</em></header>
+      <p>The product story gets stronger when every channel starts from the same truth.</p>
+      <footer><span>Edit</span><strong><Check size={10} /> Approve</strong></footer>
+    </div>
+  );
+  if (kind === "calendar") return (
+    <div className="lp-feature-art lp-art-calendar" aria-hidden="true">
+      <div><span>WED</span><p><strong>Product carousel</strong><small>Instagram · 12:00</small></p><i /></div>
+      <div><span>THU</span><p><strong>Founder insight</strong><small>Threads · 17:30</small></p><i /></div>
+      <div><span>FRI</span><p><strong>Launch post</strong><small>LinkedIn · 10:00</small></p><i /></div>
+    </div>
+  );
+  return (
+    <div className="lp-feature-art lp-art-visual" aria-hidden="true">
+      <div><span><ProReachLogo compact size={23} /></span><i>01</i></div>
+      <div><span><Sparkles size={14} /></span><i>02</i></div>
+      <div><span><PenTool size={14} /></span><i>03</i></div>
+    </div>
   );
 }

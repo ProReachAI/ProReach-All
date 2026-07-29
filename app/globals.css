@@ -439,3 +439,61 @@ button { color: inherit; }
 }
 
 .legal-page { min-height: 100vh; color: #17151d; background: #fbfaf6; font-family: Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }.legal-nav { height: 76px; display: flex; align-items: center; justify-content: space-between; padding: 0 max(24px,calc((100vw - 980px)/2)); border-bottom: 1px solid #e4dfd7; }.legal-nav > a:first-child { display: flex; align-items: center; gap: 10px; color: #17151d; text-decoration: none; }.legal-nav span { width: 38px; height: 38px; overflow: hidden; border-radius: 11px; background: #17151d; }.legal-nav img { width: 100%; height: 100%; object-fit: cover; }.legal-nav strong { font: 700 20px Georgia,serif; }.legal-nav > a:last-child { padding-bottom: 4px; border-bottom: 1px solid #17151d; color: #17151d; font-size: 10px; font-weight: 750; text-decoration: none; }.legal-page article { width: min(760px,calc(100% - 40px)); margin: 0 auto; padding: 100px 0 80px; }.legal-kicker { color: #8a70ff; font: 800 9px ui-monospace,monospace; letter-spacing: 1.4px; }.legal-page h1 { margin: 22px 0 12px; font: 500 clamp(53px,7vw,84px)/.95 Georgia,serif; letter-spacing: -4px; }.legal-updated { margin-bottom: 45px!important; color: #948d84!important; font-size: 10px!important; }.legal-page article > p { margin: 0 0 18px; color: #625c55; font-size: 13px; line-height: 1.8; }.legal-page h2 { margin: 43px 0 13px; font: 500 26px Georgia,serif; letter-spacing: -.7px; }.legal-page > footer { display: flex; justify-content: center; gap: 25px; padding: 28px 20px 45px; border-top: 1px solid #e4dfd7; }.legal-page > footer a { color: #625c55; font-size: 10px; font-weight: 700; text-underline-offset: 4px; }
+
+/* ProReach identity system */
+.proreach-logo { width: auto; height: auto; display: inline-flex; align-items: center; gap: 10px; overflow: visible; border-radius: 0; background: transparent; box-shadow: none; }
+.proreach-logo-mark { flex: 0 0 auto; display: grid; place-items: center; overflow: hidden; border-radius: 28%; background: #0a0b12; box-shadow: 0 8px 24px rgba(10,11,18,.16); }
+.proreach-logo-mark img { width: 100%; height: 100%; display: block; object-fit: contain; }
+.proreach-logo-type { width: auto; height: auto; display: grid; gap: 3px; overflow: visible; border-radius: 0; background: transparent; }
+.proreach-logo-type strong { color: #11121a; font: 700 20px/1 Georgia,"Times New Roman",serif; letter-spacing: -.65px; }
+.proreach-logo-type small { color: #8c858e; font-size: 7px; font-weight: 800; letter-spacing: 1.25px; line-height: 1; text-transform: uppercase; }
+.proreach-logo.is-light .proreach-logo-type strong { color: #fff; }
+.proreach-logo.is-light .proreach-logo-type small { color: rgba(255,255,255,.45); }
+.proreach-logo.is-compact { gap: 0; }
+.lp-brand > .proreach-logo,.lp-nav .lp-brand > .proreach-logo { width: auto; height: auto; overflow: visible; border-radius: 0; background: transparent; box-shadow: none; }
+.lp-brand .proreach-logo-mark { width: 40px; height: 40px; }
+.lp-brand .proreach-logo-type strong { font-size: 20px; }
+.lp-brand > .proreach-logo img { width: 100%; height: 100%; }
+.auth-brand > .proreach-logo { display: inline-flex; }
+.auth-brand .proreach-logo-type strong { font-size: 19px; }
+.legal-nav .proreach-logo,.legal-nav .proreach-logo-type { width: auto; height: auto; overflow: visible; border-radius: 0; background: transparent; }
+.legal-nav .proreach-logo-mark { width: 38px; height: 38px; }
+.brand-row > .proreach-logo { min-width: 0; }
+.brand-row .proreach-logo-type strong { font-size: 20px; }
+.brand-row .proreach-logo-type small { font-size: 7px; }
+
+/* Recognizable social brand marks */
+.lp-marquee i svg { width: 16px; height: 16px; }
+.lp-marquee i.facebook { color: #1877f2; }.lp-marquee i.linkedin { color: #0a66c2; }.lp-marquee i.instagram { color: #e4405f; }.lp-marquee i.threads,.lp-marquee i.x { color: #111; }
+.lp-demo-post-head > span svg { width: 13px; height: 13px; }
+.lp-demo-logo { color: inherit; background: transparent; }
+.lp-demo-logo .proreach-logo-mark { box-shadow: none; }
+
+/* Feature-card product stories */
+.lp-feature-art { bottom: -18px; height: 152px; padding: 16px; overflow: hidden; }
+.lp-feature-art::before,.lp-feature-art::after { display: none; }
+.lp-art-context { position: absolute; background: radial-gradient(circle at 50% 48%,rgba(138,112,255,.32),rgba(255,255,255,.035) 48%,transparent 70%)!important; }
+.lp-context-core { position: absolute; z-index: 2; top: 50%; left: 50%; width: 110px; height: 74px; display: grid; place-items: center; align-content: center; gap: 6px; border: 1px solid rgba(255,255,255,.17); border-radius: 17px; color: white; background: #272333; box-shadow: 0 15px 35px rgba(0,0,0,.23); transform: translate(-50%,-50%); }
+.lp-context-core svg { color: #c9ff68; }.lp-context-core strong { font: 500 10px Georgia,serif; }
+.lp-art-context > span { position: absolute; padding: 6px 8px; border: 1px solid rgba(255,255,255,.12); border-radius: 7px; color: rgba(255,255,255,.64); background: rgba(255,255,255,.055); font-size: 6px; font-weight: 750; }
+.lp-art-context > span:nth-of-type(1) { top: 16px; left: 18px; }.lp-art-context > span:nth-of-type(2) { top: 19px; right: 22px; }.lp-art-context > span:nth-of-type(3) { bottom: 25px; left: 31px; }.lp-art-context > span:nth-of-type(4) { right: 31px; bottom: 24px; }
+.lp-art-context > span::after { content: ""; position: absolute; width: 55px; height: 1px; background: linear-gradient(90deg,rgba(201,255,104,.55),transparent); }
+.lp-art-context > span:nth-of-type(1)::after { top: 19px; left: 100%; transform: rotate(20deg); transform-origin: left; }.lp-art-context > span:nth-of-type(2)::after { top: 19px; right: 100%; transform: rotate(158deg); transform-origin: right; }.lp-art-context > span:nth-of-type(3)::after { bottom: 18px; left: 100%; transform: rotate(-18deg); transform-origin: left; }.lp-art-context > span:nth-of-type(4)::after { right: 100%; bottom: 18px; transform: rotate(198deg); transform-origin: right; }
+.lp-art-campaign { display: grid; align-content: center; gap: 11px; background: rgba(255,255,255,.72); }
+.lp-art-campaign > div { display: grid; grid-template-columns: 28px 1fr; gap: 9px; align-items: center; padding: 11px; border: 1px solid rgba(65,31,23,.12); border-radius: 10px; background: rgba(255,255,255,.66); }
+.lp-art-campaign > div > i { width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(145deg,#ff6b4a,#8a70ff); }
+.lp-art-campaign p,.lp-art-campaign strong,.lp-art-campaign small { display: block; margin: 0; }.lp-art-campaign strong { color: #291b18; font-size: 8px; }.lp-art-campaign small { margin-top: 3px; color: #8f675e; font-size: 6px; }
+.lp-art-campaign > span { width: max-content; display: inline-flex; align-items: center; gap: 5px; justify-self: end; padding: 6px 8px; border-radius: 999px; color: #285845; background: #dffff0; font-size: 6px; font-weight: 800; }
+.lp-art-channels { display: grid; gap: 6px; padding: 11px 12px; }
+.lp-art-channels > div { display: grid; grid-template-columns: 23px 1fr auto; align-items: center; gap: 8px; padding: 7px 9px; border: 1px solid #e5dfd8; border-radius: 9px; background: rgba(255,255,255,.85); }
+.lp-art-channels svg { width: 14px; height: 14px; }.lp-art-channels > div:first-child svg { color: #0a66c2; }.lp-art-channels > div:nth-child(2) svg { color: #e4405f; }.lp-art-channels > div:nth-child(3) svg { color: #111; }
+.lp-art-channels div > i { display: grid; gap: 4px; }.lp-art-channels b { height: 3px; display: block; border-radius: 999px; background: #ddd7d0; }.lp-art-channels b:last-child { width: 64%; }.lp-art-channels em { padding: 4px 6px; border-radius: 999px; color: #36735c; background: #e6f6ee; font-size: 5px; font-style: normal; font-weight: 800; }
+.lp-art-approval { padding: 13px; }.lp-art-approval header { display: grid; grid-template-columns: 18px 1fr auto; gap: 7px; align-items: center; }.lp-art-approval header svg { color: #0a66c2; }.lp-art-approval header span { font-size: 7px; font-weight: 800; }.lp-art-approval header em { padding: 4px 6px; border-radius: 999px; color: #8e641f; background: #fff0d8; font-size: 5px; font-style: normal; }.lp-art-approval > p { margin: 13px 0 12px; color: #5f5861; font: 500 9px/1.35 Georgia,serif; }.lp-art-approval footer { display: flex; justify-content: flex-end; gap: 6px; }.lp-art-approval footer span,.lp-art-approval footer strong { height: 23px; display: inline-flex; align-items: center; gap: 4px; padding: 0 7px; border: 1px solid #ddd6de; border-radius: 6px; font-size: 6px; }.lp-art-approval footer strong { border-color: #1b1720; color: white; background: #1b1720; }
+.lp-art-calendar { display: grid; padding: 8px 13px; }.lp-art-calendar > div { display: grid; grid-template-columns: 27px 1fr 6px; gap: 8px; align-items: center; padding: 7px 0; border-bottom: 1px solid #ece6df; }.lp-art-calendar > div:last-child { border-bottom: 0; }.lp-art-calendar div > span { color: #928a81; font-size: 5px; font-weight: 850; }.lp-art-calendar p,.lp-art-calendar strong,.lp-art-calendar small { display: block; margin: 0; }.lp-art-calendar strong { color: #272229; font-size: 7px; }.lp-art-calendar small { margin-top: 3px; color: #928a91; font-size: 5px; }.lp-art-calendar div > i { width: 6px; height: 6px; border-radius: 50%; background: #48be91; box-shadow: 0 0 0 3px rgba(72,190,145,.12); }
+.lp-art-visual { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; padding: 12px; border-color: rgba(111,87,216,.2); background: rgba(255,255,255,.5); }.lp-art-visual > div { position: relative; display: grid; place-items: center; overflow: hidden; border: 1px solid rgba(94,74,175,.14); border-radius: 11px; background: linear-gradient(145deg,#1a1922,#41366b); }.lp-art-visual > div:nth-child(2) { color: #9f543d; background: linear-gradient(145deg,#ffab92,#ffd5c9); }.lp-art-visual > div:nth-child(3) { color: #294b4f; background: linear-gradient(145deg,#7ae2ec,#c5ffcf); }.lp-art-visual > div > span { display: grid; place-items: center; }.lp-art-visual > div > i { position: absolute; right: 6px; bottom: 5px; color: rgba(255,255,255,.58); font-size: 5px; font-style: normal; font-weight: 800; }.lp-art-visual .proreach-logo-mark { box-shadow: none; }
+
+@media (max-width: 720px) {
+  .lp-nav .lp-brand .proreach-logo-mark { width: 34px!important; height: 34px!important; }
+  .lp-nav .lp-brand > .proreach-logo { width: auto; height: auto; border-radius: 0; }
+  .lp-feature-art { bottom: -12px; }
+}

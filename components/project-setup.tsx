@@ -133,7 +133,7 @@ export function ProjectSetup({ project, onClose, onSaved }: {
     <div className="modal-backdrop" role="presentation">
       <section className="project-wizard" role="dialog" aria-modal="true" aria-label={isEditing ? "Edit project context" : "Create project"}>
         <header className="wizard-header">
-          <div><span className="eyebrow">{isEditing ? "PRODUCT CONTEXT" : "NEW PROJECT"}</span><h2>{isEditing ? `Keep ${project?.name} accurate.` : "Teach BuildToReach the product truth."}</h2><p>This context becomes the factual boundary for every generated post.</p></div>
+          <div><span className="eyebrow">{isEditing ? "PRODUCT CONTEXT" : "NEW PROJECT"}</span><h2>{isEditing ? `Keep ${project?.name} accurate.` : "Teach ProReach the product truth."}</h2><p>This context becomes the factual boundary for every generated post.</p></div>
           <button className="icon-button" onClick={onClose} aria-label="Close project setup"><X size={18} /></button>
         </header>
 

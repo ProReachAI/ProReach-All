@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
+import { ProReachLogo } from "@/components/proreach-logo";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
@@ -12,7 +12,7 @@ export default function TermsPage() {
   return (
     <main className="legal-page">
       <nav className="legal-nav">
-        <Link href="/"><span><Image src="/logo.png" alt="" width={36} height={36} /></span><strong>ProReach</strong></Link>
+        <Link href="/"><ProReachLogo size={38} /></Link>
         <Link href="/login">Open workspace</Link>
       </nav>
       <article>

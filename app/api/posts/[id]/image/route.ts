@@ -99,8 +99,8 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
         provider = process.env.CLOUDFLARE_IMAGE_MODEL ?? "@cf/black-forest-labs/flux-2-klein-4b";
       } catch (error) {
         warning = error instanceof CloudflareAIError && error.quotaExceeded
-          ? "The Cloudflare free allowance was reached, so BuildToReach used its accurate branded fallback."
-          : "The premium background model was unavailable, so BuildToReach used its accurate branded fallback.";
+          ? "The Cloudflare free allowance was reached, so ProReach used its accurate branded fallback."
+          : "The premium background model was unavailable, so ProReach used its accurate branded fallback.";
         console.warn("Premium background generation unavailable", error instanceof Error ? error.message : "Unknown error");
       }
 
