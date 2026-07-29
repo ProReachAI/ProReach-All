@@ -285,7 +285,7 @@ export function Dashboard({ projects, selectedProject, initialCampaign, connecti
 }
 
 function NavButton({ icon: Icon, label, active, onClick, count }: { icon: typeof LayoutGrid; label: string; active?: boolean; onClick?: () => void; count?: number }) {
-  return <button className={cn("nav-button", active && "active")} onClick={onClick}><Icon size={18} strokeWidth={1.8} /><span>{label}</span>{count ? <em>{count}</em> : null}</button>;
+  return <button className={cn("nav-button", active && "active")} onClick={onClick}><i className="nav-icon"><Icon size={17} strokeWidth={1.9} /></i><span>{label}</span>{count ? <em>{count}</em> : null}</button>;
 }
 
 function NoProject({ onCreate }: { onCreate: () => void }) {

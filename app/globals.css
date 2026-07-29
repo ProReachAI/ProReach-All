@@ -777,3 +777,38 @@ button { color: inherit; }
 @media (max-width: 760px) {
   .app-shell .sidebar { box-shadow: 18px 0 52px rgba(62,55,117,.15); }
 }
+
+/* Polar workspace shell and fully reworked navigation */
+.app-shell { background: #fff; }
+.app-shell .sidebar {
+  width: 268px;
+  padding: 18px 14px 16px;
+  color: #25233d;
+  border-right: 1px solid #e6e8f1;
+  background: linear-gradient(155deg,#fff 0%,#fbfcff 55%,#f7f9ff 100%);
+  box-shadow: 10px 0 34px rgba(43,48,83,.045);
+}
+.app-shell .sidebar::before { display: none; }
+.app-shell .sidebar::after { opacity: .15; background-image: radial-gradient(circle at center,rgba(100,90,165,.18) 1px,transparent 1px); background-size: 22px 22px; mask-image: linear-gradient(to bottom,transparent 12%,#000 42%,transparent 78%); }
+.app-shell .main-content { width: calc(100% - 268px); margin-left: 268px; background: radial-gradient(circle at 92% 4%,rgba(237,233,255,.46),transparent 29%),radial-gradient(circle at 3% 72%,rgba(235,249,255,.5),transparent 31%),linear-gradient(145deg,#fff 0%,#fbfcff 52%,#fff 100%); }
+.app-shell .main-content::before { opacity: .16; }
+.app-shell .topbar { border-color: #e7e9f2; background: rgba(255,255,255,.84); box-shadow: 0 7px 24px rgba(46,51,84,.035); }
+
+.app-shell .brand-row { min-height: 62px; padding: 2px 10px 17px; border-color: #e8e9f1; }.app-shell .brand-row .proreach-logo-mark { box-shadow: 0 7px 19px rgba(23,23,42,.1); }.app-shell .brand-row .proreach-logo-type strong { color: #25223b; }.app-shell .brand-row .proreach-logo-type small { color: #9996aa; }
+.app-shell .primary-nav { gap: 7px; margin-top: 16px; }.app-shell .secondary-nav { gap: 7px; padding-top: 12px; border-color: #e8e9f1; }
+.app-shell .nav-button { height: 52px; gap: 10px; padding: 7px 9px; border: 1px solid transparent; border-radius: 14px; color: #716f82; background: transparent; }
+.app-shell .nav-button:hover { color: #34314d; border-color: #ebeaf3; background: rgba(255,255,255,.8); box-shadow: 0 8px 22px rgba(50,46,87,.045); }
+.app-shell .nav-icon { width: 34px; height: 34px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 10px; color: #706a8b; background: #f1f1f7; font-style: normal; transition: transform .18s ease,box-shadow .18s ease; }
+.app-shell .nav-button:hover .nav-icon { transform: translateY(-1px); }.app-shell .nav-button span { font-size: 11px; font-weight: 650; }
+.app-shell .primary-nav .nav-button:nth-child(1) .nav-icon { color: #6552d5; background: #efecff; }.app-shell .primary-nav .nav-button:nth-child(2) .nav-icon { color: #bf557d; background: #fff0f5; }.app-shell .primary-nav .nav-button:nth-child(3) .nav-icon { color: #3977bb; background: #eaf5ff; }.app-shell .primary-nav .nav-button:nth-child(4) .nav-icon { color: #298368; background: #eaf8f3; }.app-shell .primary-nav .nav-button:nth-child(5) .nav-icon { color: #b66a38; background: #fff3e9; }
+.app-shell .secondary-nav .nav-button:nth-child(1) .nav-icon { color: #347b9e; background: #eaf8fc; }.app-shell .secondary-nav .nav-button:nth-child(2) .nav-icon { color: #6d6295; background: #f0eff7; }
+.app-shell .nav-button.active { color: #3d3478; border-color: #dcd8f5; background: linear-gradient(105deg,#f5f2ff,#f7fbff); box-shadow: 0 10px 25px rgba(70,59,140,.07); }
+.app-shell .nav-button.active .nav-icon { color: #fff; background: linear-gradient(145deg,#735ee6,#6385e8); box-shadow: 0 7px 16px rgba(91,76,201,.2); }.app-shell .nav-button.active svg { color: inherit; }
+.app-shell .nav-button em { min-width: 22px; height: 21px; color: #6f6a85; background: #eff0f5; }.app-shell .nav-button.active em { color: #5547b7; background: #e5e0ff; }
+
+.app-shell .autopilot-card { margin: 15px 3px 13px; padding: 15px; border: 1px solid #e2e1ef; border-radius: 15px; background: linear-gradient(140deg,#fff,#f7f6ff); box-shadow: 0 8px 22px rgba(54,49,99,.04); }.app-shell .autopilot-title { color: #5549a8; }.app-shell .autopilot-title svg { color: #6a58db; }.app-shell .autopilot-card p { color: #817e90; }.app-shell .safety-row { color: #277b62; }.app-shell .pulse-dot { background: #45bd91; box-shadow: 0 0 0 4px rgba(69,189,145,.1); }
+.app-shell .profile-row { margin-top: 11px; padding: 13px 8px 0; border-color: #e8e9f1; }.app-shell .profile-row strong { color: #302d48; }.app-shell .profile-row small { color: #9895a6; }.app-shell .avatar { color: #fff; background: linear-gradient(145deg,#6756d9,#5f91d7); box-shadow: 0 7px 17px rgba(72,67,145,.14); }.app-shell .profile-signout svg { color: #898697; }
+
+@media (max-width: 760px) {
+  .app-shell .sidebar { width: min(286px,88vw); box-shadow: 18px 0 48px rgba(44,48,82,.11); }.app-shell .main-content { width: 100%; margin-left: 0; }
+}
