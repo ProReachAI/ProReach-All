@@ -16,6 +16,8 @@ Do not enter the ProReach callback URL in Google's **Authorized redirect URIs** 
 3. Replace the password placeholder with the database password. Percent-encode reserved URL characters in the password, or copy the completed string from Supabase.
 4. Add `?sslmode=require` if it is not already present.
 5. Save the full value as `DATABASE_URL` in Vercel. Never use a `NEXT_PUBLIC_` prefix for this value.
+
+If the database password contains reserved URL or environment characters such as `$`, percent-encode them in the connection URI (for example, `$` becomes `%24`). This prevents `.env` expansion from changing the password before PostgreSQL receives it.
 6. In Supabase **SQL Editor**, create a new query, paste the contents of `db/schema.sql`, and run it once. The script is repeat-safe and creates the `default` workspace required by the current single-workspace application.
 
 Typical pooler shape (always use the exact host and username shown by your project):
@@ -105,7 +107,7 @@ After adding or changing Vercel variables, trigger a new production deployment; 
 ## 7. Verify the complete flow
 
 1. Open a private/incognito window at `https://proreach.in`.
-2. Confirm that the Google sign-in page appears instead of the dashboard.
+2. Confirm that the public landing page appears at `/` and that `/dashboard` redirects to Google sign-in when signed out.
 3. Select an allowed Google account.
 4. Confirm that the browser visits `/auth/callback` briefly and then loads `/`.
 5. Confirm that the existing project onboarding appears only after sign-in.

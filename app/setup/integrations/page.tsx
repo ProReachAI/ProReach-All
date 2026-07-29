@@ -80,7 +80,7 @@ export default function IntegrationSetupPage() {
   return (
     <main className="setup-page">
       <div className="setup-wrap">
-        <Link className="setup-back" href="/?view=connections"><ArrowLeft size={15} /> Back to connections</Link>
+        <Link className="setup-back" href="/dashboard?view=connections"><ArrowLeft size={15} /> Back to connections</Link>
         <span className="eyebrow">INTEGRATION SETUP</span>
         <h1>Five independent providers.<br /><em>Exact callbacks.</em></h1>
         <p className="setup-lead">Create each developer app, copy its credentials into <code>.env.local</code>, register the exact callback, and restart the server. Secrets never enter the browser.</p>

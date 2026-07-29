@@ -27,7 +27,7 @@ psql "postgresql://postgres:postgres@localhost:5432/marketing_agent" -f db/schem
 npm run dev
 ```
 
-Google sign-in is required before the dashboard loads. Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in `.env.local`, enable Google in Supabase Auth, and allow `http://localhost:3000/auth/callback`. See [the Supabase, Google Auth, and Vercel guide](docs/supabase-google-auth.md) for the complete production setup.
+The public landing page is available at `/`; Google sign-in is required before `/dashboard` loads. Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in `.env.local`, enable Google in Supabase Auth, and allow `http://localhost:3000/auth/callback`. See [the Supabase, Google Auth, and Vercel guide](docs/supabase-google-auth.md) for the complete production setup.
 
 Generate secrets before starting:
 
@@ -36,7 +36,7 @@ openssl rand -base64 32  # TOKEN_ENCRYPTION_KEY
 openssl rand -hex 32     # CRON_SECRET
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000) for the landing page or [http://localhost:3000/dashboard](http://localhost:3000/dashboard) for the authenticated workspace.
 
 For a production deployment, create the PostgreSQL schema in `db/schema.sql`, set all environment variables, and register these exact OAuth callbacks with each provider. Existing installations should run every migration through `db/migrations/0009_direct_instagram.sql`:
 

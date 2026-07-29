@@ -1,0 +1,25 @@
+# ProReach
+
+> ProReach is an approval-first AI marketing workspace for turning product context into coordinated social campaigns.
+
+## What ProReach does
+
+- Stores reusable product context: audience, positioning, proof, voice, goals, and constraints.
+- Generates coordinated campaign drafts rather than disconnected one-off posts.
+- Adapts campaign ideas for LinkedIn, Instagram, Threads, X, and Facebook.
+- Supports review, editing, approval, scheduling, and publishing workflows.
+- Keeps publishing under explicit human control.
+
+## Intended users
+
+ProReach is designed for founders, indie builders, lean marketing teams, and product marketers who want consistent multi-channel marketing without surrendering factual or creative control.
+
+## Canonical pages
+
+- Home: https://proreach.in/
+- Privacy: https://proreach.in/privacy
+- Terms: https://proreach.in/terms
+
+## Important clarification
+
+ProReach assists with marketing creation and publishing workflows. It does not guarantee reach, engagement, search rankings, citations, leads, or revenue.

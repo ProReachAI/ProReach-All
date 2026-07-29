@@ -1,79 +1,96 @@
-import { Dashboard } from "@/components/dashboard";
-import { getLatestCampaign, hasDatabase } from "@/lib/db";
-import { listConnections } from "@/lib/integrations/repository";
-import { listProjects } from "@/lib/projects";
-import { isSupabaseConfigured } from "@/lib/supabase/config";
-import { createClient } from "@/lib/supabase/server";
-import type { ConnectionSummary } from "@/lib/types";
-import { redirect } from "next/navigation";
+import type { Metadata } from "next";
+import { LandingPage } from "@/app/landing-page";
 
-export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: { absolute: "ProReach — Approval-first AI marketing agent" },
+  description: "Turn product context into coordinated social campaigns, channel-native drafts, visuals, approvals, schedules, and publish-ready posts with ProReach.",
+  keywords: [
+    "AI marketing agent",
+    "social media campaign generator",
+    "product marketing automation",
+    "approval workflow",
+    "multi-channel social publishing",
+    "AI content marketing",
+  ],
+  alternates: { canonical: "https://proreach.in" },
+  openGraph: {
+    type: "website",
+    url: "https://proreach.in",
+    siteName: "ProReach",
+    title: "ProReach — Make your product impossible to ignore",
+    description: "Approval-first AI marketing that turns product truth into coordinated, channel-native campaigns.",
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "ProReach — Make your product impossible to ignore" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ProReach — Make your product impossible to ignore",
+    description: "Approval-first AI marketing that turns product truth into coordinated, channel-native campaigns.",
+    images: ["/og.png"],
+  },
+};
 
-export default async function Home({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  if (!isSupabaseConfigured()) redirect("/login");
-  const supabase = await createClient();
-  const { data: authData } = await supabase.auth.getClaims();
-  if (!authData?.claims) redirect("/login");
+const structuredData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://proreach.in/#organization",
+      name: "ProReach",
+      url: "https://proreach.in",
+      logo: "https://proreach.in/logo.png",
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://proreach.in/#website",
+      url: "https://proreach.in",
+      name: "ProReach",
+      publisher: { "@id": "https://proreach.in/#organization" },
+      inLanguage: "en",
+    },
+    {
+      "@type": "SoftwareApplication",
+      name: "ProReach",
+      applicationCategory: "BusinessApplication",
+      operatingSystem: "Web",
+      url: "https://proreach.in",
+      description: "An approval-first AI marketing workspace for product context, multi-channel campaign creation, review, scheduling, and publishing.",
+      featureList: [
+        "Reusable product and brand context",
+        "Multi-channel social campaign generation",
+        "Human approval workflow",
+        "Social publishing calendar",
+        "Branded campaign visuals",
+      ],
+      publisher: { "@id": "https://proreach.in/#organization" },
+    },
+    {
+      "@type": "FAQPage",
+      mainEntity: [
+        {
+          "@type": "Question",
+          name: "What is ProReach?",
+          acceptedAnswer: { "@type": "Answer", text: "ProReach is an approval-first AI marketing workspace that turns saved product context into coordinated social campaigns, channel-specific drafts, visuals, schedules, and publish-ready posts." },
+        },
+        {
+          "@type": "Question",
+          name: "How is ProReach different from a generic AI writer?",
+          acceptedAnswer: { "@type": "Answer", text: "ProReach begins with a reusable source of truth covering the customer, positioning, proof, voice, and constraints, helping campaigns remain consistent across channels." },
+        },
+        {
+          "@type": "Question",
+          name: "Does ProReach publish automatically?",
+          acceptedAnswer: { "@type": "Answer", text: "ProReach requires human approval. Users review drafts, select a publishing destination, and choose whether to publish immediately or schedule a post." },
+        },
+      ],
+    },
+  ],
+};
 
-  const claims = authData.claims as Record<string, unknown>;
-  const metadata = claims.user_metadata && typeof claims.user_metadata === "object"
-    ? claims.user_metadata as Record<string, unknown>
-    : {};
-  const email = typeof claims.email === "string" ? claims.email : "Signed-in user";
-  const name = typeof metadata.full_name === "string"
-    ? metadata.full_name
-    : typeof metadata.name === "string"
-      ? metadata.name
-      : email.split("@")[0];
-  const initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join("") || "PR";
-
-  const params = await searchParams;
-  let connections: ConnectionSummary[] = [];
-  let projects = [] as Awaited<ReturnType<typeof listProjects>>;
-  let dataError: string | undefined;
-  try {
-    connections = await listConnections();
-    if (hasDatabase()) projects = await listProjects();
-  } catch (error) {
-    dataError = "The database could not be loaded. Check DATABASE_URL and run the latest migration.";
-    console.warn("Dashboard data failed", error instanceof Error ? error.message : "Unknown error");
-  }
-  const requestedProject = typeof params.project === "string" ? params.project : undefined;
-  const selectedProject = projects.find((project) => project.id === requestedProject) ?? projects[0] ?? null;
-  let campaign = null as Awaited<ReturnType<typeof getLatestCampaign>>;
-  if (selectedProject) {
-    try {
-      campaign = await getLatestCampaign(selectedProject.id);
-    } catch (error) {
-      dataError = "Campaigns could not be loaded. Check that the latest database migration has been applied.";
-      console.warn("Campaign loading failed", error instanceof Error ? error.message : "Unknown error");
-    }
-  }
-  const provider = typeof params.provider === "string" ? params.provider : "provider";
-  const outcome = typeof params.integration === "string" ? params.integration : undefined;
-  const integrationError = typeof params.integration_error === "string" ? params.integration_error : undefined;
-  const accounts = typeof params.accounts === "string" ? Number(params.accounts) : undefined;
-  const providerIsAlreadyConnected = connections.some((connection) => connection.provider === provider && connection.connected);
-  const message = dataError ?? (outcome === "connected"
-    ? `${provider === "meta" ? "Meta" : provider} connected successfully${Number.isFinite(accounts) ? ` · ${accounts} publishing account${accounts === 1 ? "" : "s"} found` : ""}.`
-    : outcome === "cancelled"
-      ? "Authorization was cancelled. Nothing was connected."
-      : outcome === "failed"
-        ? providerIsAlreadyConnected
-          ? undefined
-          : `Could not connect ${provider}. Check its callback URL, app permissions, and server logs.`
-        : integrationError === "not_configured"
-          ? `${provider === "meta" ? "Meta" : provider} credentials are not configured yet.`
-          : undefined);
+export default function Home() {
   return (
-    <Dashboard
-      projects={projects}
-      selectedProject={selectedProject}
-      initialCampaign={campaign}
-      connections={connections}
-      initialView={params.view === "connections" ? "connections" : "overview"}
-      initialNotice={message}
-      authUser={{ name, email, initials }}
-    />
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
+      <LandingPage />
+    </>
   );
 }

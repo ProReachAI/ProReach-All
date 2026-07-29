@@ -19,11 +19,17 @@ export async function updateSession(request: NextRequest) {
   const isLogin = pathname === "/login";
   const isAuthRoute = pathname.startsWith("/auth/");
   const isScheduler = pathname === "/api/cron/publish";
+  const isPublicPage = pathname === "/"
+    || pathname === "/privacy"
+    || pathname === "/terms"
+    || pathname === "/robots.txt"
+    || pathname === "/sitemap.xml"
+    || pathname === "/llms.txt";
 
   if (isScheduler) return NextResponse.next({ request });
 
   if (!isSupabaseConfigured()) {
-    if (isLogin || isAuthRoute) return NextResponse.next({ request });
+    if (isLogin || isAuthRoute || isPublicPage) return NextResponse.next({ request });
     return redirectWithCookies(request, NextResponse.next({ request }), "/login");
   }
 
@@ -53,10 +59,10 @@ export async function updateSession(request: NextRequest) {
     .catch(() => false);
 
   if (authenticated && isLogin) {
-    return redirectWithCookies(request, supabaseResponse, "/");
+    return redirectWithCookies(request, supabaseResponse, "/dashboard");
   }
 
-  if (!authenticated && !isLogin && !isAuthRoute) {
+  if (!authenticated && !isLogin && !isAuthRoute && !isPublicPage) {
     if (pathname.startsWith("/api/") && !pathname.startsWith("/api/oauth/")) {
       return copyCookies(
         supabaseResponse,

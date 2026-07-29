@@ -206,13 +206,13 @@ export function Dashboard({ projects, selectedProject, initialCampaign, connecti
   }
 
   function chooseProject(id: string) {
-    router.push(`/?project=${encodeURIComponent(id)}`);
+    router.push(`/dashboard?project=${encodeURIComponent(id)}`);
   }
 
   function savedProject(project: ProductProject) {
     setProjectSetupOpen(false); setEditingProject(null);
     setNotice(`Product context saved for ${project.name}.`);
-    router.push(`/?project=${encodeURIComponent(project.id)}`);
+    router.push(`/dashboard?project=${encodeURIComponent(project.id)}`);
     router.refresh();
   }
 

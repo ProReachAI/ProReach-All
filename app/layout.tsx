@@ -2,13 +2,18 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "ProReach — Marketing Agent for Indie Builders",
+  metadataBase: new URL("https://proreach.in"),
+  title: {
+    default: "ProReach — Approval-first AI marketing agent",
+    template: "%s | ProReach",
+  },
   description: "Plan, approve, and publish product marketing from one calm workspace.",
   icons: {
     icon: "/logo.png",
     shortcut: "/logo.png",
     apple: "/logo.png",
   },
+  category: "technology",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

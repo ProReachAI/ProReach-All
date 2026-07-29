@@ -40,7 +40,7 @@ create table if not exists oauth_sessions (
   state_hash text not null unique,
   binding_hash text not null,
   pkce_verifier_ciphertext text,
-  return_to text not null default '/?view=connections',
+  return_to text not null default '/dashboard?view=connections',
   expires_at timestamptz not null,
   consumed_at timestamptz,
   created_at timestamptz not null default now()

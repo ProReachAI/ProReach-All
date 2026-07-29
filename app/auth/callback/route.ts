@@ -33,5 +33,5 @@ export async function GET(request: Request) {
     return NextResponse.redirect(new URL("/login?error=oauth_callback", origin));
   }
 
-  return NextResponse.redirect(new URL("/", origin));
+  return NextResponse.redirect(new URL("/dashboard", origin));
 }

@@ -30,7 +30,7 @@ export async function createOAuthSession(input: {
   const stateHash = await sha256Hex(input.state);
   const bindingHash = await sha256Hex(input.binding);
   const pkceCiphertext = input.pkceVerifier ? await encryptSecret(input.pkceVerifier) : null;
-  const returnTo = input.returnTo?.startsWith("/") && !input.returnTo.startsWith("//") ? input.returnTo : "/?view=connections";
+  const returnTo = input.returnTo?.startsWith("/") && !input.returnTo.startsWith("//") ? input.returnTo : "/dashboard?view=connections";
   await getPool().query(
     `insert into oauth_sessions (
        workspace_id, provider, state_hash, binding_hash, pkce_verifier_ciphertext, return_to, expires_at
