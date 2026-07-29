@@ -848,3 +848,38 @@ button { color: inherit; }
 .app-shell .primary-nav .nav-button:nth-child(3) .nav-icon { color: #a06b27; background: #fff4df; }.app-shell .secondary-nav .nav-button:nth-child(1) .nav-icon { color: #4b7b55; background: #edf8ef; }.app-shell .avatar { background: linear-gradient(145deg,#7441b5,#d45f8c); box-shadow: 0 7px 17px rgba(107,48,125,.13); }
 
 .onboarding-ambient-one { background: radial-gradient(circle,rgba(255,199,181,.4),rgba(255,199,181,0) 68%); }.onboarding-ambient-two { background: radial-gradient(circle,rgba(214,166,232,.42),rgba(214,166,232,0) 70%); }.empty-orbit { background: linear-gradient(145deg,#7741ba,#bd4f91); box-shadow: 0 15px 34px rgba(107,52,137,.2),inset 0 1px rgba(255,255,255,.28); }.onboarding-float-right > span { background: linear-gradient(145deg,#ff8069,#d45c94); }
+
+/* Final workspace direction — polar white surfaces with soft-black emphasis */
+.app-shell {
+  --workspace-night: #171821;
+  --workspace-panel: #22232d;
+  --workspace-paper: #fff;
+  --workspace-white: #fff;
+  --workspace-violet: #292a35;
+  --workspace-cyan: #b9ff70;
+  --workspace-line: #e5e5e9;
+  color: #1b1c23;
+}
+.app-shell .main-content { background: radial-gradient(circle at 92% 4%,rgba(240,240,244,.52),transparent 29%),linear-gradient(145deg,#fff 0%,#fbfbfc 52%,#fff 100%); }.app-shell .main-content::before { background-image: linear-gradient(rgba(24,25,33,.022) 1px,transparent 1px),linear-gradient(90deg,rgba(24,25,33,.022) 1px,transparent 1px); }
+.app-shell .topbar { border-color: #e8e8eb; background: rgba(255,255,255,.92); }.workspace-route { border-color: #e5e5e8; }.app-shell .project-switcher > svg,.app-shell .eyebrow { color: #555762; }
+.app-shell .hero-row h1,.app-shell .subpage h1 { color: #171821; }.app-shell .page-lead { color: #6f7078; }
+
+.app-shell .topbar .primary-button,.app-shell .primary-button,.app-shell .connect-button { border-color: #171821; color: #fff; background: #171821; box-shadow: 0 10px 24px rgba(23,24,33,.14); }.app-shell .primary-button:hover { border-color: #2d2e38; background: #2d2e38; box-shadow: 0 13px 28px rgba(23,24,33,.18); }.app-shell .ghost-button { border-color: #dedee3; color: #33343c; background: #fff; }.app-shell .ghost-button:hover { border-color: #c8c8ce; }
+
+.app-shell .panel,.app-shell .metric-card,.performance-summary article,.growth-steps article,.app-shell .connection-card,.overview-stat-row article,.overview-channel-panel,.overview-context-action { border-color: #e4e4e8; background: rgba(255,255,255,.94); box-shadow: 0 13px 34px rgba(23,24,33,.045); }.app-shell .panel:hover,.app-shell .metric-card:hover,.performance-summary article:hover,.growth-steps article:hover,.app-shell .connection-card:hover { border-color: #d2d2d8; box-shadow: 0 18px 40px rgba(23,24,33,.07); }
+.app-shell .panel-heading,.app-shell .post-row,.platform-performance-list > div,.app-shell .calendar-list,.app-shell .calendar-day,.app-shell .day-posts { border-color: #e8e8eb; }.app-shell .product-context-strip,.overview-context-ribbon { border-color: #e2e2e6; background: linear-gradient(120deg,#fff,#f7f7f8); }.app-shell .context-tags span { color: #404149; background: #ededf0; }.app-shell .api-note { border-color: #d9d9df; color: #4b4c54; background: #f4f4f6; }
+
+.app-shell .project-hero,.growth-hero,.campaign-pulse-card,.performance-summary .performance-hero-card,.app-shell .next-panel,.app-shell .active-publishing-panel,.overview-schedule-panel,.oauth-explainer {
+  background: radial-gradient(circle at 84% 8%,rgba(255,255,255,.08),transparent 31%),linear-gradient(145deg,#171821 0%,#22232d 100%)!important;
+  box-shadow: 0 24px 58px rgba(23,24,33,.16);
+}
+.app-shell .project-hero h1 span,.app-shell .timeline-item span { color: #d9d9df; }.app-shell .project-hero .eyebrow,.growth-hero > div > span,.growth-hero aside > span,.app-shell .active-publishing-panel .eyebrow,.overview-schedule-panel .eyebrow { color: #c9ff68!important; }
+.campaign-progress-ring::before { background: #22232d; }.performance-note { color: #fff; background: #171821; box-shadow: 0 20px 50px rgba(23,24,33,.13); }.next-action-card { border: 1px solid #e1e1e5; color: #1b1c23; background: #fff; box-shadow: 0 18px 44px rgba(23,24,33,.07); }.next-action-card::after { border-color: rgba(23,24,33,.06); }.platform-performance-list i b { background: #23242d; }
+
+.destination-selector-dialog { background: #fff; }.destination-selector-dialog > header,.app-shell .composer > header,.app-shell .wizard-header,.app-shell .publish-dialog > header,.app-shell .edit-post-dialog > header { background: radial-gradient(circle at 86% 0,rgba(255,255,255,.08),transparent 34%),#171821; }.destination-selector-list > button,.destination-selector-dialog > footer { border-color: #e5e5e9; background: #fff; }.destination-selector-list > button.selected { border-color: #a9a9b1; background: #f5f5f6; box-shadow: inset 3px 0 #171821; }.destination-selector-list > button.selected > i { border-color: #171821; color: #fff; background: #171821; }
+
+.app-shell .nav-icon,.app-shell .primary-nav .nav-button:nth-child(1) .nav-icon,.app-shell .primary-nav .nav-button:nth-child(2) .nav-icon,.app-shell .primary-nav .nav-button:nth-child(3) .nav-icon,.app-shell .primary-nav .nav-button:nth-child(4) .nav-icon,.app-shell .primary-nav .nav-button:nth-child(5) .nav-icon,.app-shell .secondary-nav .nav-button:nth-child(1) .nav-icon,.app-shell .secondary-nav .nav-button:nth-child(2) .nav-icon { color: #62636c; background: #f0f0f2; }
+.app-shell .nav-button.active { color: #171821; border-color: #dedee3; background: #f5f5f7; box-shadow: 0 9px 23px rgba(23,24,33,.055); }.app-shell .nav-button.active .nav-icon { color: #fff; background: #171821; box-shadow: 0 7px 16px rgba(23,24,33,.15); }.app-shell .nav-button.active em { color: #fff; background: #171821; }
+.app-shell .autopilot-card { border-color: #e1e1e5; background: linear-gradient(140deg,#fff,#f6f6f7); }.app-shell .autopilot-title,.app-shell .autopilot-title svg { color: #33343c; }.app-shell .avatar { background: #171821; box-shadow: 0 7px 17px rgba(23,24,33,.13); }
+
+.onboarding-ambient-one,.onboarding-ambient-two { opacity: .45; background: radial-gradient(circle,rgba(210,210,216,.48),rgba(210,210,216,0) 70%); }.empty-orbit { border-color: #292a33; background: #171821; box-shadow: 0 14px 30px rgba(23,24,33,.16); }.onboarding-stage h1 em { color: #34353e; }.onboarding-float-right > span { background: #171821; }
