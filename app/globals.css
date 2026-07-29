@@ -812,3 +812,39 @@ button { color: inherit; }
 @media (max-width: 760px) {
   .app-shell .sidebar { width: min(286px,88vw); box-shadow: 18px 0 48px rgba(44,48,82,.11); }.app-shell .main-content { width: 100%; margin-left: 0; }
 }
+
+/* Warm editorial palette — removes blue from workspace chrome and feature surfaces */
+.app-shell {
+  --workspace-night: #542477;
+  --workspace-panel: #713187;
+  --workspace-paper: #fff;
+  --workspace-white: #fff;
+  --workspace-violet: #7541bf;
+  --workspace-cyan: #57c993;
+  --workspace-line: #e6e1eb;
+}
+.app-shell .main-content { background: radial-gradient(circle at 92% 4%,rgba(242,226,248,.44),transparent 29%),radial-gradient(circle at 3% 72%,rgba(255,238,233,.42),transparent 31%),linear-gradient(145deg,#fff 0%,#fdfbfd 52%,#fff 100%); }
+.app-shell .main-content::before { background-image: linear-gradient(rgba(92,61,104,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(92,61,104,.025) 1px,transparent 1px); }
+.app-shell .topbar { border-color: #ece7ee; background: rgba(255,255,255,.9); }.workspace-route { border-color: #e8e2ea; }.app-shell .project-switcher > svg,.app-shell .eyebrow { color: #7842bd; }
+
+.app-shell .topbar .primary-button,.app-shell .primary-button,.app-shell .connect-button { border-color: #793eb4; background: linear-gradient(120deg,#7541bd,#a74398); box-shadow: 0 11px 27px rgba(119,54,147,.18); }.app-shell .primary-button:hover { border-color: #6b34a4; background: linear-gradient(120deg,#6a37ad,#973c89); box-shadow: 0 14px 31px rgba(119,54,147,.23); }
+.app-shell .ghost-button { border-color: #e1dae5; }.app-shell .ghost-button:hover { border-color: #cfc1d6; }
+
+.app-shell .panel,.app-shell .metric-card,.performance-summary article,.growth-steps article,.app-shell .connection-card,.overview-stat-row article,.overview-channel-panel,.overview-context-action { border-color: #e8e2eb; box-shadow: 0 14px 38px rgba(73,45,85,.055); }.app-shell .panel:hover,.app-shell .metric-card:hover,.performance-summary article:hover,.growth-steps article:hover,.app-shell .connection-card:hover { border-color: #d9ccde; box-shadow: 0 19px 44px rgba(91,47,109,.085); }
+.app-shell .panel-heading,.app-shell .post-row,.platform-performance-list > div,.app-shell .calendar-list,.app-shell .calendar-day,.app-shell .day-posts { border-color: #ece6ed; }
+.app-shell .product-context-strip,.overview-context-ribbon { border-color: #e5dce8; background: linear-gradient(120deg,rgba(255,255,255,.94),rgba(247,237,249,.84),rgba(255,241,236,.76)); }.app-shell .api-note { border-color: #dccce4; background: linear-gradient(110deg,#f7eef9,#fff4ef); }
+
+.app-shell .project-hero,.growth-hero,.campaign-pulse-card,.performance-summary .performance-hero-card,.app-shell .next-panel,.app-shell .active-publishing-panel,.overview-schedule-panel,.oauth-explainer {
+  background: radial-gradient(circle at 84% 10%,rgba(255,126,105,.3),transparent 31%),radial-gradient(circle at 8% 92%,rgba(221,104,170,.27),transparent 29%),linear-gradient(145deg,#5b287f 0%,#7c338c 50%,#a44383 100%)!important;
+  box-shadow: 0 25px 65px rgba(101,42,113,.18);
+}
+.app-shell .project-hero h1 span,.app-shell .timeline-item span { color: #f3c9ea; }.app-shell .project-hero .eyebrow,.growth-hero > div > span,.growth-hero aside > span,.app-shell .active-publishing-panel .eyebrow,.overview-schedule-panel .eyebrow { color: #d9ff9a!important; }
+.campaign-progress-ring { background: conic-gradient(#c9ff68 0 var(--campaign-progress),rgba(255,255,255,.12) var(--campaign-progress) 360deg); }.campaign-progress-ring::before { background: #652b7d; }
+.performance-note,.next-action-card { background: linear-gradient(145deg,#ff806c 0%,#ed6c9f 57%,#a94aa0 120%); }.platform-performance-list i b { background: linear-gradient(90deg,#7a42bd,#ef795f); }
+
+.destination-selector-dialog { background: #fcfafc; }.destination-selector-dialog > header,.app-shell .composer > header,.app-shell .wizard-header,.app-shell .publish-dialog > header,.app-shell .edit-post-dialog > header { background: radial-gradient(circle at 86% 0,rgba(255,132,106,.32),transparent 34%),linear-gradient(145deg,#5e287f,#9b408c); }.destination-selector-list > button,.destination-selector-dialog > footer { border-color: #e9e2eb; }.destination-selector-list > button.selected { border-color: #b78ac7; background: linear-gradient(100deg,#f6edf9,#fff7f3); box-shadow: inset 3px 0 #8744b5; }
+
+.app-shell .nav-button.active { color: #593079; border-color: #e2d5e8; background: linear-gradient(105deg,#faf4fc,#fff9f6); box-shadow: 0 10px 25px rgba(91,48,109,.06); }.app-shell .nav-button.active .nav-icon { background: linear-gradient(145deg,#7540bd,#aa4696); box-shadow: 0 7px 16px rgba(113,51,139,.17); }.app-shell .nav-button.active em { color: #743ca4; background: #f0dff3; }
+.app-shell .primary-nav .nav-button:nth-child(3) .nav-icon { color: #a06b27; background: #fff4df; }.app-shell .secondary-nav .nav-button:nth-child(1) .nav-icon { color: #4b7b55; background: #edf8ef; }.app-shell .avatar { background: linear-gradient(145deg,#7441b5,#d45f8c); box-shadow: 0 7px 17px rgba(107,48,125,.13); }
+
+.onboarding-ambient-one { background: radial-gradient(circle,rgba(255,199,181,.4),rgba(255,199,181,0) 68%); }.onboarding-ambient-two { background: radial-gradient(circle,rgba(214,166,232,.42),rgba(214,166,232,0) 70%); }.empty-orbit { background: linear-gradient(145deg,#7741ba,#bd4f91); box-shadow: 0 15px 34px rgba(107,52,137,.2),inset 0 1px rgba(255,255,255,.28); }.onboarding-float-right > span { background: linear-gradient(145deg,#ff8069,#d45c94); }
