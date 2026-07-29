@@ -3,6 +3,7 @@ import { ArrowUpRight, CalendarDays, Check, ShieldCheck, Sparkles } from "lucide
 import { GoogleSignInButton } from "@/app/login/google-sign-in-button";
 import { ProReachLogo } from "@/components/proreach-logo";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { FaLinkedinIn } from "react-icons/fa6";
 
 export const metadata = {
   title: "Sign in",
@@ -38,8 +39,8 @@ export default async function LoginPage({
         <div className="auth-form-wrap">
           <div className="auth-copy">
             <span className="auth-kicker"><Sparkles size={13} aria-hidden="true" /> Approval-first marketing</span>
-            <h1 id="sign-in-title">Welcome back to your growth workspace.</h1>
-            <p>Plan focused campaigns, shape every message and stay in control of what reaches your audience.</p>
+            <h1 id="sign-in-title">Your product truth is waiting.</h1>
+            <p>Return to focused campaigns, channel-native drafts, and the final decisions that keep every message unmistakably yours.</p>
           </div>
 
           <div className="auth-form-card">
@@ -67,14 +68,14 @@ export default async function LoginPage({
         <div className="auth-ambient auth-ambient-two" />
 
         <div className="auth-showcase-copy">
-          <span>FROM PRODUCT CONTEXT TO CONSISTENT REACH</span>
-          <h2>One campaign.<br />Every channel.<br /><em>Your final say.</em></h2>
+          <span>YOUR APPROVAL-FIRST MARKETING DESK</span>
+          <h2>Clear context.<br />Consistent reach.<br /><em>Your final say.</em></h2>
         </div>
 
         <div className="auth-product-stage" aria-hidden="true">
           <div className="auth-dashboard-shell">
             <div className="auth-dashboard-sidebar">
-              <div className="auth-mini-brand"><span /><b>PR</b></div>
+              <div className="auth-mini-brand"><ProReachLogo compact size={27} /></div>
               <i className="is-active" /><i /><i /><i /><i />
             </div>
             <div className="auth-dashboard-main">
@@ -94,7 +95,7 @@ export default async function LoginPage({
                 </div>
                 <div className="auth-dashboard-grid">
                   <article className="auth-post-preview">
-                    <header><span>in</span><div><b>LinkedIn</b><small>Tuesday · 10:30 AM</small></div><em>Needs review</em></header>
+                    <header><span><FaLinkedinIn aria-hidden="true" /></span><div><b>LinkedIn</b><small>Tuesday · 10:30 AM</small></div><em>Needs review</em></header>
                     <h3>Your team doesn&apos;t need another dashboard.</h3>
                     <p>It needs one version of the truth. Here&apos;s how collaborative reporting changes the weekly rhythm…</p>
                     <footer><span>Edit draft</span><b><Check size={11} /> Approve</b></footer>

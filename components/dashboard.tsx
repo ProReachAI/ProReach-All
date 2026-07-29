@@ -1,14 +1,16 @@
 "use client";
 
 import {
-  AlertTriangle, ArrowUpRight, AtSign, BriefcaseBusiness, CalendarDays, Camera, Check, ChevronDown,
-  CircleGauge, Clock3, FileText, Flag, ImagePlus, Layers3, LayoutGrid, LoaderCircle, Menu,
-  MessageCircle, Package, PenLine, Plus, Radio, Send, Settings,
-  Sparkles, Target, X, Zap, LogOut,
+  AlertTriangle, ArrowUpRight, BarChart3, CalendarDays, Check, ChevronDown,
+  CircleGauge, Clock3, Compass, FileText, ImagePlus, LayoutGrid, LoaderCircle, Menu,
+  Package, PenLine, Plus, Radio, Send, Settings, Sparkles, Target, TrendingUp, X, Zap, LogOut,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useMemo, useState } from "react";
+import type { IconType } from "react-icons";
+import { FaLinkedinIn } from "react-icons/fa6";
+import { SiFacebook, SiInstagram, SiMeta, SiThreads, SiX } from "react-icons/si";
 import { CampaignComposer } from "@/components/campaign-composer";
 import { ProReachLogo } from "@/components/proreach-logo";
 import { ProjectSetup } from "@/components/project-setup";
@@ -16,13 +18,13 @@ import { activePublishingDestinations, destinationsForPlatform, publishingReadin
 import { platformLabel, type Campaign, type ConnectionSummary, type MediaType, type Platform, type ProductProject, type SocialPost } from "@/lib/types";
 import { cn, formatSchedule } from "@/lib/utils";
 
-const platformIcon: Record<Platform, React.ComponentType<{ size?: number; strokeWidth?: number }>> = {
-  facebook: Flag, instagram: Camera, threads: MessageCircle, x: AtSign, linkedin: BriefcaseBusiness,
+const platformIcon: Record<Platform, IconType> = {
+  facebook: SiFacebook, instagram: SiInstagram, threads: SiThreads, x: SiX, linkedin: FaLinkedinIn,
 };
 
 const providerIcon = {
-  meta: Layers3, instagram: Camera, threads: MessageCircle, x: AtSign, linkedin: BriefcaseBusiness,
-} satisfies Record<ConnectionSummary["provider"], React.ComponentType<{ size?: number; strokeWidth?: number }>>;
+  meta: SiMeta, instagram: SiInstagram, threads: SiThreads, x: SiX, linkedin: FaLinkedinIn,
+} satisfies Record<ConnectionSummary["provider"], IconType>;
 
 const statusLabel: Record<SocialPost["status"], string> = {
   draft: "Draft", review: "Needs review", approved: "Approved", scheduled: "Scheduled",
@@ -33,7 +35,16 @@ function oauthConnectionHref(provider: ConnectionSummary["provider"]) {
   return provider === "linkedin" ? "/api/oauth/linkedin?mode=organization" : `/api/oauth/${provider}`;
 }
 
-type View = "overview" | "drafts" | "calendar" | "connections";
+type View = "overview" | "drafts" | "calendar" | "performance" | "connections" | "growth";
+
+const viewLabel: Record<View, string> = {
+  overview: "Overview",
+  drafts: "Draft studio",
+  calendar: "Content calendar",
+  performance: "Performance",
+  connections: "Connections",
+  growth: "Growth plan",
+};
 
 type Props = {
   projects: ProductProject[];
@@ -221,19 +232,19 @@ export function Dashboard({ projects, selectedProject, initialCampaign, connecti
     <div className="app-shell">
       <aside className={cn("sidebar", mobileNav && "sidebar-open")}>
         <div className="brand-row">
-          <ProReachLogo size={36} />
+          <ProReachLogo light size={36} />
           <button className="mobile-close" onClick={() => setMobileNav(false)} aria-label="Close navigation"><X size={19} /></button>
         </div>
         <nav className="primary-nav" aria-label="Main navigation">
           <NavButton icon={LayoutGrid} label="Overview" active={active === "overview"} onClick={() => setActive("overview")} />
           <NavButton icon={PenLine} label="Draft studio" active={active === "drafts"} onClick={() => setActive("drafts")} count={review.length} />
           <NavButton icon={CalendarDays} label="Content calendar" active={active === "calendar"} onClick={() => setActive("calendar")} count={scheduled.length} />
-          <NavButton icon={CircleGauge} label="Performance" />
+          <NavButton icon={CircleGauge} label="Performance" active={active === "performance"} onClick={() => setActive("performance")} />
           <NavButton icon={Radio} label="Connections" active={active === "connections"} onClick={() => setActive("connections")} />
         </nav>
         <div className="sidebar-spacer" />
         <div className="autopilot-card"><div className="autopilot-title"><Zap size={15} fill="currentColor" /> Approval mode</div><p>ProReach drafts and schedules. You keep the final say.</p><div className="safety-row"><span className="pulse-dot" /> Safe mode active</div></div>
-        <nav className="secondary-nav"><NavButton icon={Target} label="Growth plan" /><NavButton icon={Settings} label="Product context" onClick={() => selectedProject && setEditingProject(selectedProject)} /></nav>
+        <nav className="secondary-nav"><NavButton icon={Compass} label="Growth plan" active={active === "growth"} onClick={() => setActive("growth")} /><NavButton icon={Settings} label="Product context" onClick={() => selectedProject && setEditingProject(selectedProject)} /></nav>
         <div className="profile-row">
           <div className="avatar">{authUser.initials}</div>
           <div><strong>{authUser.name}</strong><small>{authUser.email}</small></div>
@@ -245,10 +256,13 @@ export function Dashboard({ projects, selectedProject, initialCampaign, connecti
 
       <main className="main-content">
         <header className="topbar">
-          <button className="mobile-menu" onClick={() => setMobileNav(true)} aria-label="Open navigation"><Menu size={21} /></button>
-          <div className="project-switcher">
-            <Package size={15} />
-            {projects.length > 0 ? <label><span>Project</span><select aria-label="Select project" value={selectedProject?.id ?? ""} onChange={(event) => chooseProject(event.target.value)}>{projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}</select><ChevronDown size={14} /></label> : <strong>No project yet</strong>}
+          <div className="topbar-left">
+            <button className="mobile-menu" onClick={() => setMobileNav(true)} aria-label="Open navigation"><Menu size={21} /></button>
+            <div className="workspace-route"><span>Workspace</span><strong>{viewLabel[active]}</strong></div>
+            <div className="project-switcher">
+              <Package size={15} />
+              {projects.length > 0 ? <label><span>Active project</span><select aria-label="Select project" value={selectedProject?.id ?? ""} onChange={(event) => chooseProject(event.target.value)}>{projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}</select><ChevronDown size={14} /></label> : <strong>No project yet</strong>}
+            </div>
           </div>
           <div className="topbar-actions">
             <button className="ghost-button new-project-button" onClick={() => { setEditingProject(null); setProjectSetupOpen(true); }}><Plus size={15} /> New project</button>
@@ -256,7 +270,7 @@ export function Dashboard({ projects, selectedProject, initialCampaign, connecti
           </div>
         </header>
 
-        {active === "connections" ? <ConnectionsView connections={connections} /> : !selectedProject ? <NoProject onCreate={() => setProjectSetupOpen(true)} /> : active === "calendar" ? <CalendarView posts={posts} connections={connections} onApprove={approvePost} onPublish={openPublishing} onEditPost={setEditingPost} onGenerateImage={generatePostImage} imageBusy={imageBusy} onCreateVariant={createVariant} variantBusy={variantBusy} onGenerate={() => setComposerOpen(true)} /> : active === "drafts" ? <DraftStudio posts={review} connections={connections} onApprove={approvePost} onPublish={openPublishing} onEditPost={setEditingPost} onGenerateImage={generatePostImage} imageBusy={imageBusy} onCreateVariant={createVariant} variantBusy={variantBusy} onGenerate={() => setComposerOpen(true)} onConnections={() => setActive("connections")} /> : campaign ? <Overview project={selectedProject} campaign={campaign} connections={connections} review={review} scheduled={scheduled} published={published} onApprove={approvePost} onPublish={openPublishing} onEditPost={setEditingPost} onGenerateImage={generatePostImage} imageBusy={imageBusy} onGenerate={() => setComposerOpen(true)} onEdit={() => setEditingProject(selectedProject)} onConnections={() => setActive("connections")} /> : <ProjectReady project={selectedProject} onGenerate={() => setComposerOpen(true)} onEdit={() => setEditingProject(selectedProject)} />}
+        {active === "connections" ? <ConnectionsView connections={connections} /> : !selectedProject ? <NoProject onCreate={() => setProjectSetupOpen(true)} /> : active === "performance" ? <PerformanceView posts={posts} /> : active === "growth" ? <GrowthPlanView project={selectedProject} campaign={campaign} onEdit={() => setEditingProject(selectedProject)} onGenerate={() => setComposerOpen(true)} /> : active === "calendar" ? <CalendarView posts={posts} connections={connections} onApprove={approvePost} onPublish={openPublishing} onEditPost={setEditingPost} onGenerateImage={generatePostImage} imageBusy={imageBusy} onCreateVariant={createVariant} variantBusy={variantBusy} onGenerate={() => setComposerOpen(true)} /> : active === "drafts" ? <DraftStudio posts={review} connections={connections} onApprove={approvePost} onPublish={openPublishing} onEditPost={setEditingPost} onGenerateImage={generatePostImage} imageBusy={imageBusy} onCreateVariant={createVariant} variantBusy={variantBusy} onGenerate={() => setComposerOpen(true)} onConnections={() => setActive("connections")} /> : campaign ? <Overview project={selectedProject} campaign={campaign} connections={connections} review={review} scheduled={scheduled} published={published} onApprove={approvePost} onPublish={openPublishing} onEditPost={setEditingPost} onGenerateImage={generatePostImage} imageBusy={imageBusy} onGenerate={() => setComposerOpen(true)} onEdit={() => setEditingProject(selectedProject)} onConnections={() => setActive("connections")} /> : <ProjectReady project={selectedProject} onGenerate={() => setComposerOpen(true)} onEdit={() => setEditingProject(selectedProject)} />}
       </main>
 
       {(projectSetupOpen || editingProject) && <ProjectSetup project={editingProject} onClose={() => { setProjectSetupOpen(false); setEditingProject(null); }} onSaved={savedProject} />}
@@ -278,6 +292,52 @@ function NoProject({ onCreate }: { onCreate: () => void }) {
 
 function ProjectReady({ project, onGenerate, onEdit }: { project: ProductProject; onGenerate: () => void; onEdit: () => void }) {
   return <div className="page-wrap project-ready"><span className="eyebrow">{project.name.toUpperCase()} · CONTEXT READY</span><h1>The product truth is saved.<br /><em>Now give this week a job.</em></h1><p>{project.oneLiner}</p><div className="context-preview"><ContextBlock label="Audience" value={project.targetAudience} /><ContextBlock label="Problem" value={project.problemStatement} /><ContextBlock label="Difference" value={project.differentiators} /></div><div className="ready-actions"><button className="primary-button" onClick={onGenerate}><Sparkles size={16} /> Generate first campaign</button><button className="ghost-button" onClick={onEdit}><Settings size={15} /> Review product context</button></div></div>;
+}
+
+function PerformanceView({ posts }: { posts: SocialPost[] }) {
+  const published = posts.filter((post) => post.status === "published");
+  const scheduled = posts.filter((post) => post.status === "scheduled");
+  const failed = posts.filter((post) => post.status === "failed");
+  const deliveryTotal = published.length + failed.length;
+  const deliveryRate = deliveryTotal ? Math.round((published.length / deliveryTotal) * 100) : 0;
+  const distribution = [...new Set(posts.map((post) => post.platform))].map((platform) => ({
+    platform,
+    total: posts.filter((post) => post.platform === platform).length,
+    published: published.filter((post) => post.platform === platform).length,
+  }));
+  return <div className="page-wrap subpage performance-page">
+    <span className="eyebrow">PERFORMANCE</span><h1>Signal, without vanity.</h1><p className="page-lead">A truthful view of what ProReach has prepared, scheduled, and successfully delivered. Audience analytics will appear only when providers return verified data.</p>
+    <section className="performance-summary">
+      <article className="performance-hero-card"><span><TrendingUp size={18} /> DELIVERY HEALTH</span><strong>{deliveryRate}%</strong><p>{deliveryTotal ? `${published.length} of ${deliveryTotal} publishing attempts completed successfully.` : "Publish your first approved post to establish a delivery baseline."}</p><i style={{ "--delivery": `${deliveryRate}%` } as React.CSSProperties} /></article>
+      <article><span>Published</span><strong>{published.length}</strong><small>Live destinations</small></article>
+      <article><span>Scheduled</span><strong>{scheduled.length}</strong><small>In the queue</small></article>
+      <article><span>Platforms</span><strong>{distribution.length}</strong><small>With campaign drafts</small></article>
+    </section>
+    <section className="performance-grid">
+      <div className="panel platform-performance"><div className="panel-heading"><div><span className="eyebrow">CHANNEL OUTPUT</span><h2>Where the campaign is moving</h2></div><BarChart3 size={20} /></div>
+        <div className="platform-performance-list">{distribution.map(({ platform, total, published: live }) => { const Icon = platformIcon[platform]; const width = posts.length ? Math.max(8, Math.round((total / posts.length) * 100)) : 0; return <div key={platform}><span className={cn("platform-icon", platform)}><Icon size={14} /></span><p><strong>{platformLabel[platform]}</strong><small>{live} published · {total} total</small></p><i><b style={{ width: `${width}%` }} /></i><em>{total}</em></div>; })}{distribution.length === 0 && <PanelEmpty title="No channel signal yet" copy="Generate a campaign to begin tracking real publishing activity." />}</div>
+      </div>
+      <aside className="panel performance-note"><span><Sparkles size={17} /></span><h2>Honest metrics only.</h2><p>ProReach never invents impressions, clicks, or engagement. This page starts with operational truth and is ready for verified provider analytics as those permissions are connected.</p><div><Check size={14} /> No estimated reach</div><div><Check size={14} /> No fabricated engagement</div><div><Check size={14} /> Delivery status from real posts</div></aside>
+    </section>
+  </div>;
+}
+
+function GrowthPlanView({ project, campaign, onEdit, onGenerate }: { project: ProductProject; campaign: Campaign | null; onEdit: () => void; onGenerate: () => void }) {
+  const contextFields = [project.description, project.targetAudience, project.problemStatement, project.differentiators, project.proofPoints, project.brandVoice, project.primaryGoal, project.primaryCta];
+  const contextScore = Math.round((contextFields.filter((value) => value.trim().length > 0).length / contextFields.length) * 100);
+  return <div className="page-wrap subpage growth-page">
+    <span className="eyebrow">GROWTH PLAN · {project.name.toUpperCase()}</span><h1>Turn product truth into momentum.</h1><p className="page-lead">A focused plan built from the context you have already approved—not generic growth advice.</p>
+    <section className="growth-hero">
+      <div><span>PRIMARY OUTCOME</span><h2>{project.primaryGoal}</h2><p>{project.oneLiner}</p><button className="primary-button" onClick={onGenerate}><Sparkles size={15} /> {campaign ? "Create next campaign" : "Create first campaign"}</button></div>
+      <aside><span>Context readiness</span><strong>{contextScore}%</strong><div><i style={{ width: `${contextScore}%` }} /></div><small>Audience, proof, positioning, voice, goal, and CTA are grounded.</small><button className="text-button" onClick={onEdit}>Review source of truth <ArrowUpRight size={14} /></button></aside>
+    </section>
+    <section className="growth-steps">
+      <article><span>01</span><div><Target size={19} /><small>FOCUS</small><h3>Own the problem</h3><p>{project.problemStatement}</p></div></article>
+      <article><span>02</span><div><Compass size={19} /><small>POSITION</small><h3>Make the difference clear</h3><p>{project.differentiators}</p></div></article>
+      <article><span>03</span><div><Sparkles size={19} /><small>PROVE</small><h3>Earn the next step</h3><p>{project.proofPoints}</p></div></article>
+    </section>
+    <section className="panel growth-voice"><div><span className="eyebrow">MESSAGE GUARDRAIL</span><h2>Sound unmistakably like {project.name}.</h2></div><blockquote>{project.brandVoice}</blockquote><div><span>Default CTA</span><strong>{project.primaryCta}</strong></div></section>
+  </div>;
 }
 
 function Overview({ project, campaign, connections, review, scheduled, published, onApprove, onPublish, onEditPost, onGenerateImage, imageBusy, onGenerate, onEdit, onConnections }: {
