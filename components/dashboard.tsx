@@ -3,7 +3,7 @@
 import {
   AlertTriangle, ArrowUpRight, BarChart3, CalendarDays, Check, ChevronDown,
   CircleGauge, Clock3, Compass, FileText, ImagePlus, LayoutGrid, LoaderCircle, Menu,
-  Package, PenLine, Plus, Radio, Send, Settings, Sparkles, Target, TrendingUp, X, Zap, LogOut,
+  Package, PenLine, Plus, Radio, Send, Settings, ShieldCheck, Sparkles, Target, TrendingUp, X, Zap, LogOut,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -53,12 +53,14 @@ type Props = {
   connections: ConnectionSummary[];
   initialView?: "overview" | "connections";
   initialNotice?: string;
+  initialSelectionId?: string;
   authUser: { name: string; email: string; initials: string };
 };
 
-export function Dashboard({ projects, selectedProject, initialCampaign, connections, initialView = "overview", initialNotice, authUser }: Props) {
+export function Dashboard({ projects, selectedProject, initialCampaign, connections: initialConnections, initialView = "overview", initialNotice, initialSelectionId, authUser }: Props) {
   const router = useRouter();
   const [campaign, setCampaign] = useState(initialCampaign);
+  const [connections, setConnections] = useState(initialConnections);
   const [active, setActive] = useState<View>(initialView);
   const [projectSetupOpen, setProjectSetupOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<ProductProject | null>(null);
@@ -104,7 +106,7 @@ export function Dashboard({ projects, selectedProject, initialCampaign, connecti
     if (suggested.getTime() <= Date.now()) suggested.setTime(Date.now() + 60 * 60 * 1000);
     const offset = suggested.getTimezoneOffset() * 60_000;
     setScheduleAt(new Date(suggested.getTime() - offset).toISOString().slice(0, 16));
-    const destinations = connections.filter((connection) => connection.connected).flatMap((connection) => connection.accounts).filter((account) => account.platform === post.platform);
+    const destinations = connections.filter((connection) => connection.connected).flatMap((connection) => connection.accounts).filter((account) => account.enabled !== false && account.platform === post.platform);
     setSelectedDestinationId(destinations.length === 1 ? destinations[0].id : "");
     setPublishDecision(post);
   }
@@ -270,7 +272,7 @@ export function Dashboard({ projects, selectedProject, initialCampaign, connecti
           </div>
         </header>
 
-        {active === "connections" ? <ConnectionsView connections={connections} /> : !selectedProject ? <NoProject onCreate={() => setProjectSetupOpen(true)} /> : active === "performance" ? <PerformanceView posts={posts} /> : active === "growth" ? <GrowthPlanView project={selectedProject} campaign={campaign} onEdit={() => setEditingProject(selectedProject)} onGenerate={() => setComposerOpen(true)} /> : active === "calendar" ? <CalendarView posts={posts} connections={connections} onApprove={approvePost} onPublish={openPublishing} onEditPost={setEditingPost} onGenerateImage={generatePostImage} imageBusy={imageBusy} onCreateVariant={createVariant} variantBusy={variantBusy} onGenerate={() => setComposerOpen(true)} /> : active === "drafts" ? <DraftStudio posts={review} connections={connections} onApprove={approvePost} onPublish={openPublishing} onEditPost={setEditingPost} onGenerateImage={generatePostImage} imageBusy={imageBusy} onCreateVariant={createVariant} variantBusy={variantBusy} onGenerate={() => setComposerOpen(true)} onConnections={() => setActive("connections")} /> : campaign ? <Overview project={selectedProject} campaign={campaign} connections={connections} review={review} scheduled={scheduled} published={published} onApprove={approvePost} onPublish={openPublishing} onEditPost={setEditingPost} onGenerateImage={generatePostImage} imageBusy={imageBusy} onGenerate={() => setComposerOpen(true)} onEdit={() => setEditingProject(selectedProject)} onConnections={() => setActive("connections")} /> : <ProjectReady project={selectedProject} onGenerate={() => setComposerOpen(true)} onEdit={() => setEditingProject(selectedProject)} />}
+        {active === "connections" ? <ConnectionsView connections={connections} initialSelectionId={initialSelectionId} onConnectionsChange={setConnections} /> : !selectedProject ? <NoProject onCreate={() => setProjectSetupOpen(true)} /> : active === "performance" ? <PerformanceView posts={posts} /> : active === "growth" ? <GrowthPlanView project={selectedProject} campaign={campaign} onEdit={() => setEditingProject(selectedProject)} onGenerate={() => setComposerOpen(true)} /> : active === "calendar" ? <CalendarView posts={posts} connections={connections} onApprove={approvePost} onPublish={openPublishing} onEditPost={setEditingPost} onGenerateImage={generatePostImage} imageBusy={imageBusy} onCreateVariant={createVariant} variantBusy={variantBusy} onGenerate={() => setComposerOpen(true)} /> : active === "drafts" ? <DraftStudio posts={review} connections={connections} onApprove={approvePost} onPublish={openPublishing} onEditPost={setEditingPost} onGenerateImage={generatePostImage} imageBusy={imageBusy} onCreateVariant={createVariant} variantBusy={variantBusy} onGenerate={() => setComposerOpen(true)} onConnections={() => setActive("connections")} /> : campaign ? <Overview project={selectedProject} campaign={campaign} connections={connections} review={review} scheduled={scheduled} published={published} onApprove={approvePost} onPublish={openPublishing} onEditPost={setEditingPost} onGenerateImage={generatePostImage} imageBusy={imageBusy} onGenerate={() => setComposerOpen(true)} onEdit={() => setEditingProject(selectedProject)} onConnections={() => setActive("connections")} /> : <ProjectReady project={selectedProject} onGenerate={() => setComposerOpen(true)} onEdit={() => setEditingProject(selectedProject)} />}
       </main>
 
       {(projectSetupOpen || editingProject) && <ProjectSetup project={editingProject} onClose={() => { setProjectSetupOpen(false); setEditingProject(null); }} onSaved={savedProject} />}
@@ -343,7 +345,7 @@ function GrowthPlanView({ project, campaign, onEdit, onGenerate }: { project: Pr
 function Overview({ project, campaign, connections, review, scheduled, published, onApprove, onPublish, onEditPost, onGenerateImage, imageBusy, onGenerate, onEdit, onConnections }: {
   project: ProductProject; campaign: Campaign; connections: ConnectionSummary[]; review: SocialPost[]; scheduled: SocialPost[]; published: SocialPost[]; onApprove: (id: string) => void; onPublish: (post: SocialPost) => void; onEditPost: (post: SocialPost) => void; onGenerateImage: (id: string, mediaType: MediaType) => void; imageBusy: string | null; onGenerate: () => void; onEdit: () => void; onConnections: () => void;
 }) {
-  const connectedDestinations = new Set(connections.flatMap((connection) => connection.accounts.map((account) => account.platform))).size;
+  const connectedDestinations = new Set(connections.flatMap((connection) => connection.accounts.filter((account) => account.enabled !== false).map((account) => account.platform))).size;
   const totalPosts = campaign.posts.length;
   const movedForward = scheduled.length + published.length;
   const progress = totalPosts ? Math.round((movedForward / totalPosts) * 100) : 0;
@@ -557,25 +559,72 @@ function PublishDecisionModal({ post, connections, scheduleAt, onScheduleAt, sel
   </div>;
 }
 
-function ConnectionsView({ connections: initialConnections }: { connections: ConnectionSummary[] }) {
+function ConnectionsView({ connections: initialConnections, initialSelectionId, onConnectionsChange }: { connections: ConnectionSummary[]; initialSelectionId?: string; onConnectionsChange: (connections: ConnectionSummary[]) => void }) {
   const [connections, setConnections] = useState(initialConnections);
   const [busy, setBusy] = useState<string | null>(null);
   const [confirming, setConfirming] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const initialSelection = initialConnections.find((connection) => connection.id === initialSelectionId);
+  const [selecting, setSelecting] = useState<ConnectionSummary | null>(initialSelection ?? null);
+  const [selectedAccountIds, setSelectedAccountIds] = useState<string[]>(() => initialSelection?.accounts.filter((account) => account.enabled !== false).map((account) => account.id) ?? []);
+  const [selectionBusy, setSelectionBusy] = useState(false);
+
+  function updateConnections(updater: (connections: ConnectionSummary[]) => ConnectionSummary[]) {
+    setConnections((current) => {
+      const next = updater(current);
+      onConnectionsChange(next);
+      return next;
+    });
+  }
+
+  function openSelector(connection: ConnectionSummary) {
+    setSelecting(connection);
+    setSelectedAccountIds(connection.accounts.filter((account) => account.enabled !== false).map((account) => account.id));
+  }
+
+  function toggleAccount(id: string) {
+    setSelectedAccountIds((current) => current.includes(id) ? current.filter((value) => value !== id) : [...current, id]);
+  }
+
+  async function saveSelection() {
+    if (!selecting?.id || selectedAccountIds.length === 0) return;
+    setSelectionBusy(true); setFeedback(null);
+    try {
+      const response = await fetch(`/api/integrations/${selecting.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ accountIds: selectedAccountIds }),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error ?? "Publishing destinations could not be saved.");
+      updateConnections((current) => current.map((connection) => connection.id === selecting.id ? {
+        ...connection,
+        accounts: connection.accounts.map((account) => ({ ...account, enabled: selectedAccountIds.includes(account.id) })),
+      } : connection));
+      setFeedback(`${selectedAccountIds.length} ${selecting.label} destination${selectedAccountIds.length === 1 ? "" : "s"} enabled for publishing.`);
+      setSelecting(null);
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : "Publishing destinations could not be saved.");
+    } finally { setSelectionBusy(false); }
+  }
 
   async function verify(connection: ConnectionSummary) {
     if (!connection.id) return; setBusy(connection.id); setFeedback(null);
-    try { const response = await fetch(`/api/integrations/${connection.id}/verify`, { method: "POST" }); if (!response.ok) throw new Error("The token is no longer valid. Reconnect this account."); setFeedback(`${connection.label} is connected and responding.`); setConnections((current) => current.map((item) => item.id === connection.id ? { ...item, status: "active", connected: true } : item)); }
-    catch (error) { setFeedback(error instanceof Error ? error.message : "Verification failed."); setConnections((current) => current.map((item) => item.id === connection.id ? { ...item, status: "error", connected: false } : item)); }
+    try { const response = await fetch(`/api/integrations/${connection.id}/verify`, { method: "POST" }); if (!response.ok) throw new Error("The token is no longer valid. Reconnect this account."); setFeedback(`${connection.label} is connected and responding.`); updateConnections((current) => current.map((item) => item.id === connection.id ? { ...item, status: "active", connected: true } : item)); }
+    catch (error) { setFeedback(error instanceof Error ? error.message : "Verification failed."); updateConnections((current) => current.map((item) => item.id === connection.id ? { ...item, status: "error", connected: false } : item)); }
     finally { setBusy(null); }
   }
 
   async function disconnect(connection: ConnectionSummary) {
     if (!connection.id) return; if (confirming !== connection.id) { setConfirming(connection.id); return; } setBusy(connection.id); setFeedback(null);
-    try { const response = await fetch(`/api/integrations/${connection.id}`, { method: "DELETE" }); if (!response.ok) throw new Error("Disconnect failed."); setConnections((current) => current.map((item) => item.id === connection.id ? { ...item, id: undefined, connected: false, status: undefined, accountName: undefined, accounts: [] } : item)); setFeedback(`${connection.label} disconnected. Stored tokens were removed.`); }
+    try { const response = await fetch(`/api/integrations/${connection.id}`, { method: "DELETE" }); if (!response.ok) throw new Error("Disconnect failed."); updateConnections((current) => current.map((item) => item.id === connection.id ? { ...item, id: undefined, connected: false, status: undefined, accountName: undefined, accounts: [] } : item)); setFeedback(`${connection.label} disconnected. Stored tokens were removed.`); }
     catch (error) { setFeedback(error instanceof Error ? error.message : "Disconnect failed."); }
     finally { setBusy(null); setConfirming(null); }
   }
 
-  return <div className="page-wrap subpage"><span className="eyebrow">CONNECTIONS</span><h1>Your publishing desk.</h1><p className="page-lead">Authorize each provider once. OAuth grants and destination tokens are encrypted, verified, and removable.</p>{feedback && <div className="connection-feedback">{feedback}<button onClick={() => setFeedback(null)} aria-label="Dismiss message"><X size={14} /></button></div>}<div className="connection-grid">{connections.map((connection) => { const Icon = providerIcon[connection.provider]; const isBusy = busy === connection.id; return <article className={cn("connection-card", connection.connected && "is-connected")} key={connection.provider}><div className={cn("connection-logo", connection.provider)}><Icon size={24} /></div><div className="connection-copy"><h3>{connection.label}</h3><strong>{connection.accountName ?? (connection.configured ? "Not connected" : "Setup required")}</strong><p>{connection.note}</p>{connection.accounts.length > 0 && <div className="connected-accounts">{connection.accounts.map((account) => <span key={account.id}>{account.platform === "facebook" ? "FB" : account.platform === "instagram" ? "IG" : account.destinationType === "organization" ? "Page" : account.platform === "linkedin" ? "Profile" : "@"} {account.username ?? account.displayName}</span>)}</div>}{connection.provider === "linkedin" && connection.connected && !connection.accounts.some((account) => account.destinationType === "organization") && <p className="connection-warning">Only a personal profile is connected. Reconnect after enabling LinkedIn Community Management API access to add company Pages.</p>}</div><div className="connection-actions">{connection.connected && connection.id ? <><a className="connect-button" href={oauthConnectionHref(connection.provider)}>Reconnect <ArrowUpRight size={15} /></a><button className="verify-button" onClick={() => verify(connection)} disabled={isBusy}>{isBusy ? <LoaderCircle className="spin" size={14} /> : <Radio size={14} />} Verify</button><button className={cn("disconnect-button", confirming === connection.id && "confirm")} onClick={() => disconnect(connection)} disabled={isBusy}>{confirming === connection.id ? "Confirm disconnect" : "Disconnect"}</button></> : <a className={cn("connect-button", !connection.configured && "needs-setup")} href={connection.configured ? oauthConnectionHref(connection.provider) : `/setup/integrations#${connection.provider}`}>{connection.configured ? connection.provider === "linkedin" ? "Connect company Page" : "Connect" : "Configure"} <ArrowUpRight size={15} /></a>}</div></article>; })}</div><div className="api-note"><Sparkles size={18} /><div><strong>Connection boundaries</strong><p>ProReach requests publishing permissions only. It does not follow accounts, send DMs, or automate comments.</p></div></div></div>;
+  return <div className="page-wrap subpage connections-page"><span className="eyebrow">CONNECTIONS</span><h1>Connect once. Publish with confidence.</h1><p className="page-lead">Sign in on each provider&apos;s official authorization screen. ProReach securely stores the grant, discovers the Pages and profiles you manage, and lets you choose exactly which destinations to enable.</p>{feedback && <div className="connection-feedback">{feedback}<button onClick={() => setFeedback(null)} aria-label="Dismiss message"><X size={14} /></button></div>}<div className="oauth-explainer"><span><ShieldCheck size={18} /></span><div><strong>No token copying</strong><p>Users never paste access tokens or secrets. Provider credentials are configured once by the ProReach administrator; every workspace connection after that is a normal OAuth sign-in.</p></div><div><i>1</i> Click Connect <i>2</i> Approve on provider <i>3</i> Choose destinations</div></div><div className="connection-grid">{connections.map((connection) => { const Icon = providerIcon[connection.provider]; const isBusy = busy === connection.id; const enabledCount = connection.accounts.filter((account) => account.enabled !== false).length; return <article className={cn("connection-card", connection.connected && "is-connected")} key={connection.provider}><div className={cn("connection-logo", connection.provider)}><Icon size={24} /></div><div className="connection-copy"><h3>{connection.label}</h3><strong>{connection.accountName ?? (connection.configured ? "Ready to connect" : "One-time setup required")}</strong><p>{connection.note}</p>{connection.accounts.length > 0 && <div className="connected-accounts">{connection.accounts.map((account) => <span className={cn(account.enabled !== false ? "enabled" : "disabled")} key={account.id}>{account.enabled !== false && <Check size={10} />}{account.platform === "facebook" ? "Page" : account.platform === "instagram" ? "IG" : account.destinationType === "organization" ? "Page" : account.platform === "linkedin" ? "Profile" : "@"} {account.username ?? account.displayName}</span>)}</div>}{connection.accounts.length > 1 && <button className="choose-destinations-button" onClick={() => openSelector(connection)}><Settings size={13} /> Choose Pages & profiles <em>{enabledCount}/{connection.accounts.length}</em></button>}{connection.provider === "linkedin" && connection.connected && !connection.accounts.some((account) => account.destinationType === "organization") && <p className="connection-warning">Only a personal profile was returned. LinkedIn company Pages require approved Community Management API access.</p>}</div><div className="connection-actions">{connection.connected && connection.id ? <><a className="connect-button" href={oauthConnectionHref(connection.provider)}>Reconnect <ArrowUpRight size={15} /></a><button className="verify-button" onClick={() => verify(connection)} disabled={isBusy}>{isBusy ? <LoaderCircle className="spin" size={14} /> : <Radio size={14} />} Verify</button><button className={cn("disconnect-button", confirming === connection.id && "confirm")} onClick={() => disconnect(connection)} disabled={isBusy}>{confirming === connection.id ? "Confirm disconnect" : "Disconnect"}</button></> : <a className={cn("connect-button", !connection.configured && "needs-setup")} href={connection.configured ? oauthConnectionHref(connection.provider) : `/setup/integrations#${connection.provider}`}>{connection.configured ? <>Connect with {connection.label} <ArrowUpRight size={15} /></> : <>Configure once <ArrowUpRight size={15} /></>}</a>}</div></article>; })}</div><div className="api-note"><Sparkles size={18} /><div><strong>Connection boundaries</strong><p>ProReach requests publishing permissions only. It does not follow accounts, send DMs, or automate comments.</p></div></div>{selecting && <DestinationSelector connection={selecting} selectedIds={selectedAccountIds} busy={selectionBusy} onToggle={toggleAccount} onClose={() => !selectionBusy && setSelecting(null)} onSave={saveSelection} />}</div>;
+}
+
+function DestinationSelector({ connection, selectedIds, busy, onToggle, onClose, onSave }: { connection: ConnectionSummary; selectedIds: string[]; busy: boolean; onToggle: (id: string) => void; onClose: () => void; onSave: () => void }) {
+  return <div className="modal-backdrop" role="presentation" onMouseDown={onClose}><section className="destination-selector-dialog" role="dialog" aria-modal="true" aria-label={`Choose ${connection.label} publishing destinations`} onMouseDown={(event) => event.stopPropagation()}><header><div><span className="eyebrow">OAUTH COMPLETE · {connection.label.toUpperCase()}</span><h2>Choose where ProReach can publish.</h2><p>Only selected destinations appear in campaign publishing. You can change this later without signing in again.</p></div><button className="icon-button" onClick={onClose} disabled={busy} aria-label="Close destination selector"><X size={18} /></button></header><div className="destination-selector-list">{connection.accounts.map((account) => { const Icon = platformIcon[account.platform]; const selected = selectedIds.includes(account.id); return <button type="button" className={cn(selected && "selected")} onClick={() => onToggle(account.id)} key={account.id}><span className={cn("platform-icon large",account.platform)}><Icon size={17} /></span><p><strong>{account.displayName}</strong><small>{account.destinationType === "organization" ? "Company Page" : account.platform === "facebook" ? "Facebook Page" : account.username ? `@${account.username}` : `${platformLabel[account.platform]} profile`}</small></p><i>{selected ? <Check size={15} /> : <Plus size={15} />}</i></button>; })}</div><footer><span>{selectedIds.length} of {connection.accounts.length} selected</span><div><button className="ghost-button" onClick={onClose} disabled={busy}>Cancel</button><button className="primary-button" onClick={onSave} disabled={busy || selectedIds.length === 0}>{busy ? <LoaderCircle className="spin" size={15} /> : <Check size={15} />} Enable destinations</button></div></footer></section></div>;
 }

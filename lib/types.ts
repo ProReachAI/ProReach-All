@@ -111,6 +111,7 @@ export interface ConnectionSummary {
     displayName: string;
     username?: string;
     destinationType?: "person" | "organization";
+    enabled?: boolean;
   }>;
   note: string;
 }

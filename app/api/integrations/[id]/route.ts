@@ -1,8 +1,27 @@
 import { NextResponse } from "next/server";
-import { deleteIntegration, getIntegrationSecret } from "@/lib/integrations/repository";
+import { z } from "zod";
+import { deleteIntegration, getIntegrationSecret, setEnabledSocialAccounts } from "@/lib/integrations/repository";
 import { revokeProviderToken } from "@/lib/integrations/providers";
 
 export const runtime = "nodejs";
+
+const selectionSchema = z.object({
+  accountIds: z.array(z.string().uuid()).min(1).max(100),
+});
+
+export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params;
+  try {
+    const payload = selectionSchema.parse(await request.json());
+    const accountIds = await setEnabledSocialAccounts(id, [...new Set(payload.accountIds)]);
+    return NextResponse.json({ accountIds });
+  } catch (error) {
+    const message = error instanceof z.ZodError
+      ? "Choose at least one valid publishing destination."
+      : error instanceof Error ? error.message : "Unable to update publishing destinations.";
+    return NextResponse.json({ error: message }, { status: 400 });
+  }
+}
 
 export async function DELETE(_: Request, context: { params: Promise<{ id: string }> }) {
   const { id } = await context.params;

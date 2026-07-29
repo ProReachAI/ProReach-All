@@ -11,7 +11,7 @@ export function CampaignComposer({ project, connections, onClose, onCreated }: {
   onClose: () => void;
   onCreated: (campaign: Campaign) => void;
 }) {
-  const connected = useMemo(() => new Set(connections.flatMap((connection) => connection.accounts.map((account) => account.platform))), [connections]);
+  const connected = useMemo(() => new Set(connections.flatMap((connection) => connection.accounts.filter((account) => account.enabled !== false).map((account) => account.platform))), [connections]);
   const [goal, setGoal] = useState(project.primaryGoal);
   const [focus, setFocus] = useState("");
   const [instructions, setInstructions] = useState("");

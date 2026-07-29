@@ -95,31 +95,44 @@ export async function saveAuthorization(result: AuthorizationResult) {
       ],
     );
     const integrationId = integration.rows[0].id as string;
+    const previousSelection = await client.query(
+      "select provider_account_id from social_accounts where integration_id = $1 and enabled = true",
+      [integrationId],
+    );
+    const previouslyEnabled = new Set(previousSelection.rows.map((row) => String(row.provider_account_id)));
     await client.query("delete from social_accounts where integration_id = $1", [integrationId]);
 
+    let enabledCount = 0;
     for (const account of encryptedAccounts) {
+      const enabled = encryptedAccounts.length === 1 || previouslyEnabled.has(account.providerAccountId);
+      if (enabled) enabledCount += 1;
       await client.query(
         `insert into social_accounts (
            workspace_id, integration_id, platform, provider_account_id, display_name,
-           access_token_ciphertext, refresh_token_ciphertext, token_expires_at, scopes, metadata
-         ) values ($1, $2, $3, $4, $5, $6, null, $7, $8, $9)
+           access_token_ciphertext, refresh_token_ciphertext, token_expires_at, scopes, enabled, metadata
+         ) values ($1, $2, $3, $4, $5, $6, null, $7, $8, $9, $10)
          on conflict (workspace_id, platform, provider_account_id) do update set
            integration_id = excluded.integration_id,
            display_name = excluded.display_name,
            access_token_ciphertext = excluded.access_token_ciphertext,
            token_expires_at = excluded.token_expires_at,
            scopes = excluded.scopes,
+           enabled = excluded.enabled,
            metadata = excluded.metadata,
            updated_at = now()`,
         [
           workspaceId, integrationId, account.platform, account.providerAccountId,
           account.displayName, account.ciphertext, account.tokenExpiresAt ?? null,
-          result.token.scopes, account.metadata ?? {},
+          result.token.scopes, enabled, account.metadata ?? {},
         ],
       );
     }
     await client.query("commit");
-    return integrationId;
+    return {
+      integrationId,
+      accountCount: encryptedAccounts.length,
+      requiresSelection: encryptedAccounts.length > 1 && enabledCount === 0,
+    };
   } catch (error) {
     await client.query("rollback");
     throw error;
@@ -149,7 +162,7 @@ export async function listConnections(): Promise<ConnectionSummary[]> {
   if (!integrations.rowCount) return base;
   const ids = integrations.rows.map((row) => row.id);
   const accounts = await getPool().query(
-    `select id, integration_id, platform, provider_account_id, display_name, metadata
+    `select id, integration_id, platform, provider_account_id, display_name, enabled, metadata
        from social_accounts where integration_id = any($1::uuid[]) order by platform, display_name`,
     [ids],
   );
@@ -170,9 +183,40 @@ export async function listConnections(): Promise<ConnectionSummary[]> {
         displayName: row.display_name ?? row.provider_account_id,
         username: row.metadata?.username ? String(row.metadata.username) : undefined,
         destinationType: row.metadata?.destinationType === "organization" ? "organization" : "person",
+        enabled: row.enabled !== false,
       })),
     };
   });
+}
+
+export async function setEnabledSocialAccounts(integrationId: string, accountIds: string[]) {
+  if (accountIds.length === 0) throw new Error("Choose at least one publishing destination.");
+  const workspaceId = await defaultWorkspaceId();
+  const client = await getPool().connect();
+  try {
+    await client.query("begin");
+    const owned = await client.query(
+      `select id from social_accounts
+        where workspace_id = $1 and integration_id = $2 and id = any($3::uuid[])`,
+      [workspaceId, integrationId, accountIds],
+    );
+    if (owned.rowCount !== accountIds.length) throw new Error("One or more destinations do not belong to this connection.");
+    await client.query(
+      "update social_accounts set enabled = false, updated_at = now() where workspace_id = $1 and integration_id = $2",
+      [workspaceId, integrationId],
+    );
+    await client.query(
+      "update social_accounts set enabled = true, updated_at = now() where workspace_id = $1 and integration_id = $2 and id = any($3::uuid[])",
+      [workspaceId, integrationId, accountIds],
+    );
+    await client.query("commit");
+    return accountIds;
+  } catch (error) {
+    await client.query("rollback");
+    throw error;
+  } finally {
+    client.release();
+  }
 }
 
 export async function getIntegrationSecret(id: string) {

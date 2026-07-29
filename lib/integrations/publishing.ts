@@ -7,7 +7,7 @@ export type PublishingDestination = ConnectionSummary["accounts"][number] & {
 export function activePublishingDestinations(connections: ConnectionSummary[]): PublishingDestination[] {
   return connections
     .filter((connection) => connection.connected && connection.status !== "error" && connection.status !== "revoked")
-    .flatMap((connection) => connection.accounts.map((account) => ({ ...account, provider: connection.provider })));
+    .flatMap((connection) => connection.accounts.filter((account) => account.enabled !== false).map((account) => ({ ...account, provider: connection.provider })));
 }
 
 export function destinationsForPlatform(connections: ConnectionSummary[], platform: Platform) {

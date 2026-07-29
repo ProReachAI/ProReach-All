@@ -23,19 +23,25 @@ export async function GET(request: Request, context: { params: Promise<{ platfor
     if (providerError) return redirectToConnections({ provider: value, outcome: "cancelled" });
     if (!code) throw new Error("The provider did not return an authorization code.");
     const result = await completeAuthorization(value, code, session.pkceVerifier);
-    await saveAuthorization(result);
-    return redirectToConnections({ provider: value, outcome: "connected", accounts: result.accounts.length });
+    const saved = await saveAuthorization(result);
+    return redirectToConnections({
+      provider: value,
+      outcome: "connected",
+      accounts: result.accounts.length,
+      selectIntegration: saved.requiresSelection ? saved.integrationId : undefined,
+    });
   } catch (error) {
     console.error("OAuth callback failed", error instanceof Error ? error.message : "Unknown error");
     return redirectToConnections({ provider: value, outcome: "failed" });
   }
 }
 
-function redirectToConnections(input: { provider: string; outcome: "connected" | "cancelled" | "failed"; accounts?: number }) {
-  const target = new URL(process.env.APP_URL ?? "http://localhost:3000");
+function redirectToConnections(input: { provider: string; outcome: "connected" | "cancelled" | "failed"; accounts?: number; selectIntegration?: string }) {
+  const target = new URL("/dashboard", process.env.APP_URL ?? "http://localhost:3000");
   target.searchParams.set("view", "connections");
   target.searchParams.set("integration", input.outcome);
   target.searchParams.set("provider", input.provider);
   if (input.accounts !== undefined) target.searchParams.set("accounts", String(input.accounts));
+  if (input.selectIntegration) target.searchParams.set("select_integration", input.selectIntegration);
   return NextResponse.redirect(target);
 }

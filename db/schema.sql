@@ -120,6 +120,7 @@ create table if not exists social_accounts (
   refresh_token_ciphertext text,
   token_expires_at timestamptz,
   scopes text[] not null default '{}',
+  enabled boolean not null default true,
   metadata jsonb not null default '{}',
   connected_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
@@ -127,6 +128,7 @@ create table if not exists social_accounts (
 );
 
 alter table social_accounts add column if not exists integration_id uuid references integrations(id) on delete cascade;
+alter table social_accounts add column if not exists enabled boolean not null default true;
 create index if not exists social_accounts_integration_idx on social_accounts (integration_id);
 
 create table if not exists campaigns (

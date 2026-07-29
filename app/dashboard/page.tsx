@@ -59,9 +59,12 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   const outcome = typeof params.integration === "string" ? params.integration : undefined;
   const integrationError = typeof params.integration_error === "string" ? params.integration_error : undefined;
   const accounts = typeof params.accounts === "string" ? Number(params.accounts) : undefined;
+  const needsDestinationSelection = typeof params.select_integration === "string";
   const providerIsAlreadyConnected = connections.some((connection) => connection.provider === provider && connection.connected);
   const message = dataError ?? (outcome === "connected"
-    ? `${provider === "meta" ? "Meta" : provider} connected successfully${Number.isFinite(accounts) ? ` · ${accounts} publishing account${accounts === 1 ? "" : "s"} found` : ""}.`
+    ? needsDestinationSelection
+      ? `${provider === "meta" ? "Meta" : provider} connected successfully. Choose the Pages or profiles ProReach may publish to.`
+      : `${provider === "meta" ? "Meta" : provider} connected successfully${Number.isFinite(accounts) ? ` · ${accounts} publishing account${accounts === 1 ? "" : "s"} found` : ""}.`
     : outcome === "cancelled"
       ? "Authorization was cancelled. Nothing was connected."
       : outcome === "failed"
@@ -79,6 +82,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       connections={connections}
       initialView={params.view === "connections" ? "connections" : "overview"}
       initialNotice={message}
+      initialSelectionId={typeof params.select_integration === "string" ? params.select_integration : undefined}
       authUser={{ name, email, initials }}
     />
   );

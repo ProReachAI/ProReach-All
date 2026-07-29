@@ -4,6 +4,7 @@ import { assertEncryptionReady, createPkce, createState } from "@/lib/security/c
 import { createOAuthSession } from "@/lib/integrations/repository";
 import { callbackUrl, getProviderCredentials, isProvider, providerConfig } from "@/lib/integrations/providers";
 import { canonicalOAuthStartUrl } from "@/lib/integrations/oauth-origin";
+import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
@@ -18,6 +19,10 @@ export async function GET(request: Request, context: { params: Promise<{ platfor
   const incomingHost = request.headers.get("x-forwarded-host") ?? request.headers.get("host");
   const canonicalStart = canonicalOAuthStartUrl(request.url, process.env.APP_URL, incomingHost);
   if (canonicalStart) return NextResponse.redirect(canonicalStart);
+
+  const supabase = await createClient();
+  const { data: authData } = await supabase.auth.getClaims();
+  if (!authData?.claims) return NextResponse.redirect(new URL("/login", request.url));
 
   try {
     const config = providerConfig[value];
@@ -57,7 +62,7 @@ export async function GET(request: Request, context: { params: Promise<{ platfor
     return NextResponse.redirect(`${config.authorizeUrl}?${query}`);
   } catch (error) {
     console.error("OAuth start failed", value, error instanceof Error ? error.message : "Unknown error");
-    const target = new URL(process.env.APP_URL ?? "http://localhost:3000");
+    const target = new URL("/dashboard", process.env.APP_URL ?? "http://localhost:3000");
     target.searchParams.set("view", "connections");
     target.searchParams.set("integration_error", "not_configured");
     target.searchParams.set("provider", value);
