@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "BuildToReach — Marketing Agent for Indie Builders",
+  title: "ProReach — Marketing Agent for Indie Builders",
   description: "Plan, approve, and publish product marketing from one calm workspace.",
   icons: {
     icon: "/logo.png",
@@ -18,4 +18,3 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     </html>
   );
 }
-

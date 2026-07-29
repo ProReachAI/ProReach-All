@@ -27,6 +27,8 @@ psql "postgresql://postgres:postgres@localhost:5432/marketing_agent" -f db/schem
 npm run dev
 ```
 
+Google sign-in is required before the dashboard loads. Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in `.env.local`, enable Google in Supabase Auth, and allow `http://localhost:3000/auth/callback`. See [the Supabase, Google Auth, and Vercel guide](docs/supabase-google-auth.md) for the complete production setup.
+
 Generate secrets before starting:
 
 ```bash
@@ -86,6 +88,8 @@ draft -> review -> approved -> scheduled -> publishing -> published
 
 Auto-publish should only be enabled per content category after reviewing at least two weeks of successful output. Tokens and PKCE verifiers are encrypted with AES-256-GCM. OAuth state is stored as a one-way hash in a one-time database session and bound to a short-lived HTTP-only SameSite cookie, so callbacks expire and cannot be replayed.
 
+Supabase Auth verifies the Google session before serving the dashboard and refreshes SSR cookies through the Next.js request proxy. Application API routes return `401` without a valid session; social OAuth starts redirect expired sessions back to sign-in, and the scheduler remains separately protected by `CRON_SECRET`.
+
 ## Platform setup notes
 
 - **Facebook:** uses Facebook Login for Business to discover manageable Facebook Pages. Public Page publishing requires Meta review/Advanced Access; development-mode access is restricted to app roles/testers.
@@ -102,8 +106,9 @@ Run the provider contract tests with `npm test`. They mock the external exchange
 - LinkedIn and Meta posts support generated images; X and Threads remain text-only in this first release.
 - Native video upload remains a follow-up milestone.
 - Analytics collection is schema-ready but not enabled until provider read permissions and cost limits are configured.
-- This is a single-workspace foundation. Add an identity provider and workspace membership before offering it as a multi-tenant SaaS.
-- Until application login is added, deploy behind private access; OAuth grants currently bind to the single `default` workspace.
+- This remains a single-workspace foundation. Google authentication is enabled, but user-to-workspace membership and tenant isolation must be added before offering it as a multi-tenant SaaS.
+- Until membership is implemented, restrict the Google OAuth app to trusted test users or an Internal Google Workspace audience; OAuth grants and projects still bind to the single `default` workspace.
 
 See [docs/30-day-growth-plan.md](docs/30-day-growth-plan.md) for the operating strategy and [docs/architecture.md](docs/architecture.md) for the implementation map.
 See [docs/creative-system.md](docs/creative-system.md) for the product-ad archetypes, no-real-human policy, and media rendering pipeline.
+See [docs/supabase-google-auth.md](docs/supabase-google-auth.md) for Supabase database, Google OAuth, and Vercel environment configuration.

@@ -3,8 +3,8 @@
 import {
   AlertTriangle, ArrowUpRight, AtSign, BriefcaseBusiness, CalendarDays, Camera, Check, ChevronDown,
   CircleGauge, Clock3, FileText, Flag, ImagePlus, Layers3, LayoutGrid, LoaderCircle, Menu,
-  MessageCircle, MoreHorizontal, Package, PenLine, Plus, Radio, Send, Settings,
-  Sparkles, Target, X, Zap,
+  MessageCircle, Package, PenLine, Plus, Radio, Send, Settings,
+  Sparkles, Target, X, Zap, LogOut,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -41,9 +41,10 @@ type Props = {
   connections: ConnectionSummary[];
   initialView?: "overview" | "connections";
   initialNotice?: string;
+  authUser: { name: string; email: string; initials: string };
 };
 
-export function Dashboard({ projects, selectedProject, initialCampaign, connections, initialView = "overview", initialNotice }: Props) {
+export function Dashboard({ projects, selectedProject, initialCampaign, connections, initialView = "overview", initialNotice, authUser }: Props) {
   const router = useRouter();
   const [campaign, setCampaign] = useState(initialCampaign);
   const [active, setActive] = useState<View>(initialView);
@@ -238,7 +239,13 @@ export function Dashboard({ projects, selectedProject, initialCampaign, connecti
         <div className="sidebar-spacer" />
         <div className="autopilot-card"><div className="autopilot-title"><Zap size={15} fill="currentColor" /> Approval mode</div><p>BuildToReach drafts and schedules. You keep the final say.</p><div className="safety-row"><span className="pulse-dot" /> Safe mode active</div></div>
         <nav className="secondary-nav"><NavButton icon={Target} label="Growth plan" /><NavButton icon={Settings} label="Product context" onClick={() => selectedProject && setEditingProject(selectedProject)} /></nav>
-        <div className="profile-row"><div className="avatar">NP</div><div><strong>Naga Pavan</strong><small>Builder workspace</small></div><MoreHorizontal size={18} /></div>
+        <div className="profile-row">
+          <div className="avatar">{authUser.initials}</div>
+          <div><strong>{authUser.name}</strong><small>{authUser.email}</small></div>
+          <form action="/auth/signout" method="post">
+            <button className="profile-signout" type="submit" aria-label="Sign out" title="Sign out"><LogOut size={16} /></button>
+          </form>
+        </div>
       </aside>
 
       <main className="main-content">

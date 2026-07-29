@@ -2,9 +2,31 @@ import { Dashboard } from "@/components/dashboard";
 import { getLatestCampaign, hasDatabase } from "@/lib/db";
 import { listConnections } from "@/lib/integrations/repository";
 import { listProjects } from "@/lib/projects";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { createClient } from "@/lib/supabase/server";
 import type { ConnectionSummary } from "@/lib/types";
+import { redirect } from "next/navigation";
+
+export const dynamic = "force-dynamic";
 
 export default async function Home({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  if (!isSupabaseConfigured()) redirect("/login");
+  const supabase = await createClient();
+  const { data: authData } = await supabase.auth.getClaims();
+  if (!authData?.claims) redirect("/login");
+
+  const claims = authData.claims as Record<string, unknown>;
+  const metadata = claims.user_metadata && typeof claims.user_metadata === "object"
+    ? claims.user_metadata as Record<string, unknown>
+    : {};
+  const email = typeof claims.email === "string" ? claims.email : "Signed-in user";
+  const name = typeof metadata.full_name === "string"
+    ? metadata.full_name
+    : typeof metadata.name === "string"
+      ? metadata.name
+      : email.split("@")[0];
+  const initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join("") || "PR";
+
   const params = await searchParams;
   let connections: ConnectionSummary[] = [];
   let projects = [] as Awaited<ReturnType<typeof listProjects>>;
@@ -51,6 +73,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
       connections={connections}
       initialView={params.view === "connections" ? "connections" : "overview"}
       initialNotice={message}
+      authUser={{ name, email, initials }}
     />
   );
 }

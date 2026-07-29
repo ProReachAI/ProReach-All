@@ -2,6 +2,7 @@ node_modules/
 .next/
 .env
 .env.local
+.env.vercel
 *.log
 .DS_Store
 coverage/
