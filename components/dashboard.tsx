@@ -344,17 +344,51 @@ function Overview({ project, campaign, connections, review, scheduled, published
   project: ProductProject; campaign: Campaign; connections: ConnectionSummary[]; review: SocialPost[]; scheduled: SocialPost[]; published: SocialPost[]; onApprove: (id: string) => void; onPublish: (post: SocialPost) => void; onEditPost: (post: SocialPost) => void; onGenerateImage: (id: string, mediaType: MediaType) => void; imageBusy: string | null; onGenerate: () => void; onEdit: () => void; onConnections: () => void;
 }) {
   const connectedDestinations = new Set(connections.flatMap((connection) => connection.accounts.map((account) => account.platform))).size;
-  return <div className="page-wrap">
-    <section className="hero-row project-hero"><div><span className="eyebrow">{project.name.toUpperCase()} · LATEST CAMPAIGN</span><h1>Product truth,<br /><span>turned into attention.</span></h1><p><strong>{campaign.name}</strong> — {campaign.thesis}</p></div><button className="context-button" onClick={onEdit}><Settings size={15} /><span><small>CONTEXT SOURCE</small><strong>{project.name}</strong></span><ArrowUpRight size={14} /></button></section>
-    <section className="metric-grid"><Metric label="Ready to review" value={String(review.length)} meta="Requires your approval" icon={Sparkles} tone="violet" /><Metric label="Scheduled" value={String(scheduled.length)} meta="Publishing queue" icon={Clock3} tone="blue" /><Metric label="Published" value={String(published.length)} meta="Latest campaign" icon={Send} tone="green" /><Metric label="Destinations" value={String(connectedDestinations)} meta="Connected accounts" icon={Radio} tone="amber" /></section>
-    <section className="content-grid"><div className="panel queue-panel"><div className="panel-heading"><div><span className="eyebrow">REVIEW QUEUE</span><h2>Worth your attention</h2></div><button className="text-button" onClick={onGenerate}>New campaign <ArrowUpRight size={15} /></button></div><div className="post-list">{review.slice(0, 3).map((post) => <PostRow key={post.id} post={post} onApprove={onApprove} onPublish={onPublish} onEdit={onEditPost} onGenerateImage={onGenerateImage} generatingImage={imageBusy === post.id} />)}</div>{review.length === 0 && <PanelEmpty title="No drafts waiting" copy="Generate a campaign when you have a new objective." action="Generate campaign" onAction={onGenerate} />}</div><aside className="panel next-panel"><div className="panel-heading compact"><div><span className="eyebrow">NEXT UP</span><h2>Publishing rhythm</h2></div></div><Timeline posts={scheduled} /></aside></section>
-    <section className="panel product-context-strip"><div><span className="eyebrow">SAVED PRODUCT CONTEXT</span><h3>{project.oneLiner}</h3><p>{project.targetAudience}</p></div><div className="context-tags">{project.keyFeatures.slice(0, 4).map((feature) => <span key={feature}>{feature}</span>)}</div><button className="outline-button" onClick={onEdit}>Edit context</button></section>
-    <section className="connections-strip"><div><span className="eyebrow">DISTRIBUTION</span><h2>Connected destinations only. No fake activity.</h2></div><div className="connection-icons">{connections.map((connection) => { const Icon = providerIcon[connection.provider]; return <span key={connection.provider} className={cn("connection-bubble", connection.connected && "connected")} title={connection.label}><Icon size={18} /><i /></span>; })}<button onClick={onConnections}>Manage <ArrowUpRight size={14} /></button></div></section>
-  </div>;
-}
+  const totalPosts = campaign.posts.length;
+  const movedForward = scheduled.length + published.length;
+  const progress = totalPosts ? Math.round((movedForward / totalPosts) * 100) : 0;
+  const nextDraft = review[0];
+  const NextIcon = nextDraft ? platformIcon[nextDraft.platform] : Sparkles;
+  return <div className="page-wrap overview-dashboard">
+    <section className="overview-welcome">
+      <div><span className="eyebrow">{project.name.toUpperCase()} · COMMAND CENTER</span><h1>Good to see you.<br /><em>Let&apos;s move the story forward.</em></h1><p>{campaign.name} is active. Focus on the next meaningful decision instead of another blank prompt.</p></div>
+      <div className="overview-header-actions"><button className="overview-context-action" onClick={onEdit}><Settings size={15} /><span><small>SOURCE OF TRUTH</small><strong>{project.name}</strong></span></button><button className="primary-button" onClick={onGenerate}><Sparkles size={15} /> New campaign</button></div>
+    </section>
 
-function Metric({ label, value, meta, icon: Icon, tone }: { label: string; value: string; meta: string; icon: typeof Sparkles; tone: string }) {
-  return <article className="metric-card"><div className={cn("metric-icon", tone)}><Icon size={18} /></div><span>{label}</span><strong>{value}</strong><small>{meta}</small></article>;
+    <section className="overview-command-grid">
+      <article className="campaign-pulse-card">
+        <header><span><i /> ACTIVE CAMPAIGN</span><em>{totalPosts} platform drafts</em></header>
+        <div className="campaign-pulse-copy"><span>{campaign.name}</span><h2>{campaign.thesis}</h2></div>
+        <div className="campaign-progress-area">
+          <div className="campaign-progress-ring" style={{ "--campaign-progress": `${progress * 3.6}deg` } as React.CSSProperties}><div><strong>{progress}%</strong><small>moved forward</small></div></div>
+          <div className="campaign-stage-list"><div><i className="review" /><span><strong>{review.length}</strong><small>Needs your eye</small></span></div><div><i className="scheduled" /><span><strong>{scheduled.length}</strong><small>Scheduled</small></span></div><div><i className="published" /><span><strong>{published.length}</strong><small>Published</small></span></div></div>
+        </div>
+        <footer><span><Target size={14} /> Grounded in {project.name}&apos;s product context</span><button onClick={onEdit}>View context <ArrowUpRight size={13} /></button></footer>
+      </article>
+
+      <aside className="next-action-card">
+        <header><span>NEXT BEST ACTION</span><i><Sparkles size={14} /></i></header>
+        {nextDraft ? <><div className={cn("next-action-platform",nextDraft.platform)}><NextIcon size={18} /><span>{platformLabel[nextDraft.platform]} · {statusLabel[nextDraft.status]}</span></div><h2>{nextDraft.hook}</h2><p>{nextDraft.body}</p><div className="next-action-meta"><span>{nextDraft.pillar}</span><span>{nextDraft.mediaType}</span></div><footer><button className="ghost-button" onClick={() => onEditPost(nextDraft)}>Open draft</button>{["review","draft"].includes(nextDraft.status) ? <button className="primary-button" onClick={() => onApprove(nextDraft.id)}><Check size={14} /> Approve</button> : <button className="primary-button" onClick={() => onPublish(nextDraft)}><Send size={14} /> Publish options</button>}</footer></> : <><div className="next-action-clear"><Check size={22} /></div><h2>Your review queue is clear.</h2><p>Everything in this campaign has moved forward. Start the next campaign when the product story has a new job to do.</p><footer><button className="primary-button" onClick={onGenerate}><Sparkles size={14} /> Create campaign</button></footer></>}
+      </aside>
+    </section>
+
+    <section className="overview-stat-row">
+      <article><span className="overview-stat-icon violet"><Sparkles size={17} /></span><div><small>READY TO REVIEW</small><strong>{review.length}</strong></div><em>{review.length ? "Your attention" : "All clear"}</em></article>
+      <article><span className="overview-stat-icon cyan"><Clock3 size={17} /></span><div><small>IN THE QUEUE</small><strong>{scheduled.length}</strong></div><em>Scheduled posts</em></article>
+      <article><span className="overview-stat-icon coral"><Send size={17} /></span><div><small>SHIPPED</small><strong>{published.length}</strong></div><em>This campaign</em></article>
+      <article><span className="overview-stat-icon lime"><Radio size={17} /></span><div><small>DESTINATIONS</small><strong>{connectedDestinations}</strong></div><em>Ready to publish</em></article>
+    </section>
+
+    <section className="overview-workbench">
+      <div className="panel overview-review-panel"><div className="panel-heading"><div><span className="eyebrow">REVIEW WORKBENCH</span><h2>Make the message unmistakably yours</h2></div><span className="overview-queue-count">{review.length} open</span></div><div className="post-list">{review.slice(0,3).map((post) => <PostRow key={post.id} post={post} onApprove={onApprove} onPublish={onPublish} onEdit={onEditPost} onGenerateImage={onGenerateImage} generatingImage={imageBusy === post.id} />)}</div>{review.length === 0 && <PanelEmpty title="Nothing waiting for review" copy="Your active campaign is moving. Create another when you have a timely objective." action="Generate campaign" onAction={onGenerate} />}</div>
+      <aside className="overview-side-stack">
+        <section className="panel overview-schedule-panel"><div className="panel-heading compact"><div><span className="eyebrow">PUBLISHING PULSE</span><h2>Coming up next</h2></div><Clock3 size={18} /></div><Timeline posts={scheduled} /></section>
+        <section className="panel overview-channel-panel"><header><div><span className="eyebrow">CHANNEL HEALTH</span><h2>Your distribution desk</h2></div><button onClick={onConnections}>Manage <ArrowUpRight size={13} /></button></header><div>{connections.map((connection) => { const Icon = providerIcon[connection.provider]; return <span key={connection.provider} className={cn(connection.connected && "connected")}><i><Icon size={15} /></i><strong>{connection.label}</strong><em>{connection.connected ? "Ready" : "Connect"}</em></span>; })}</div></section>
+      </aside>
+    </section>
+
+    <section className="overview-context-ribbon"><div><span><Target size={17} /></span><p><small>PRODUCT SIGNAL</small><strong>{project.oneLiner}</strong></p></div><div className="context-tags">{project.keyFeatures.slice(0,4).map((feature) => <span key={feature}>{feature}</span>)}</div><button onClick={onEdit}>Keep context sharp <ArrowUpRight size={14} /></button></section>
+  </div>;
 }
 
 function ContextBlock({ label, value }: { label: string; value: string }) {
