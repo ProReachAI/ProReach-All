@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { getPool } from "@/lib/db";
 import type { ProductProject } from "@/lib/types";
+import { ensureUserWorkspace } from "@/lib/workspaces";
 
 const optionalUrl = z.union([z.literal(""), z.string().url().max(500)]).transform((value) => value || null);
 const shortList = z.array(z.string().trim().min(1).max(120)).max(20).default([]);
@@ -71,34 +72,36 @@ const columns = `id, name, slug, website_url, logo_url, logo_key, one_liner, des
   words_to_use, words_to_avoid, primary_goal, primary_cta, additional_context,
   created_at, updated_at`;
 
-export async function listProjects() {
+export async function listProjects(userId: string, displayName?: string) {
+  const workspaceId = await ensureUserWorkspace(userId, displayName);
   const result = await getPool().query(
     `select ${columns} from (
        select distinct on (lower(name)) ${columns}
          from projects
-        where workspace_id = (select id from workspaces where slug = 'default')
+        where workspace_id = $1
         order by lower(name), updated_at desc
      ) deduplicated
      order by updated_at desc`,
+    [workspaceId],
   );
   return result.rows.map(mapProject);
 }
 
-export async function setProjectLogo(id: string, logoUrl: string, logoKey: string) {
+export async function setProjectLogo(userId: string, id: string, logoUrl: string, logoKey: string) {
   const result = await getPool().query(
     `update projects set logo_url=$2, logo_key=$3, updated_at=now()
-      where id=$1 and workspace_id=(select id from workspaces where slug='default')
+      where id=$1 and workspace_id=(select id from workspaces where owner_user_id=$4::uuid)
       returning ${columns}`,
-    [id, logoUrl, logoKey],
+    [id, logoUrl, logoKey, userId],
   );
   return result.rows[0] ? mapProject(result.rows[0]) : undefined;
 }
 
-export async function getProject(id: string) {
+export async function getProject(userId: string, id: string) {
   const result = await getPool().query(
     `select ${columns} from projects
-      where id = $1 and workspace_id = (select id from workspaces where slug = 'default')`,
-    [id],
+      where id = $1 and workspace_id = (select id from workspaces where owner_user_id = $2::uuid)`,
+    [id, userId],
   );
   return result.rows[0] ? mapProject(result.rows[0]) : undefined;
 }
@@ -113,14 +116,15 @@ function values(input: ProjectInput) {
   ];
 }
 
-export async function createProject(raw: unknown) {
+export async function createProject(userId: string, displayName: string, raw: unknown) {
   const input = ProjectInputSchema.parse(raw);
+  const workspaceId = await ensureUserWorkspace(userId, displayName);
   const existing = await getPool().query(
     `select ${columns} from projects
-      where workspace_id = (select id from workspaces where slug = 'default')
+      where workspace_id = $2
         and lower(name) = lower($1)
       order by updated_at desc limit 1`,
-    [input.name],
+    [input.name, workspaceId],
   );
   if (existing.rows[0]) return mapProject(existing.rows[0]);
   const base = slugify(input.name);
@@ -132,18 +136,18 @@ export async function createProject(raw: unknown) {
         solution, target_audience, audience_pain_points, use_cases, key_features,
         differentiators, proof_points, competitors, brand_voice, tone_guidelines,
         words_to_use, words_to_avoid, primary_goal, primary_cta, additional_context
-      ) values ((select id from workspaces where slug = 'default'), $1, $21, $2, $3, $4, $5,
+      ) values ($22, $1, $21, $2, $3, $4, $5,
         $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
       on conflict do nothing returning ${columns}`,
-      [...values(input), slug],
+      [...values(input), slug, workspaceId],
     );
     if (result.rows[0]) return mapProject(result.rows[0]);
     const concurrent = await getPool().query(
       `select ${columns} from projects
-        where workspace_id = (select id from workspaces where slug = 'default')
+        where workspace_id = $2
           and lower(name) = lower($1)
         order by updated_at desc limit 1`,
-      [input.name],
+      [input.name, workspaceId],
     );
     if (concurrent.rows[0]) return mapProject(concurrent.rows[0]);
     slug = `${base}-${attempt + 2}`;
@@ -151,7 +155,7 @@ export async function createProject(raw: unknown) {
   throw new Error("Could not create a unique project slug.");
 }
 
-export async function updateProject(id: string, raw: unknown) {
+export async function updateProject(userId: string, id: string, raw: unknown) {
   const input = ProjectInputSchema.parse(raw);
   const result = await getPool().query(
     `update projects set
@@ -160,9 +164,9 @@ export async function updateProject(id: string, raw: unknown) {
       key_features=$11, differentiators=$12, proof_points=$13, competitors=$14,
       brand_voice=$15, tone_guidelines=$16, words_to_use=$17, words_to_avoid=$18,
       primary_goal=$19, primary_cta=$20, additional_context=$21, updated_at=now()
-      where id=$1 and workspace_id=(select id from workspaces where slug='default')
+      where id=$1 and workspace_id=(select id from workspaces where owner_user_id=$22::uuid)
       returning ${columns}`,
-    [id, ...values(input)],
+    [id, ...values(input), userId],
   );
   return result.rows[0] ? mapProject(result.rows[0]) : undefined;
 }

@@ -3,6 +3,7 @@ import { decryptSecret, encryptSecret, sha256Hex } from "@/lib/security/crypto";
 import { integrationProviders, providerLabel, type ConnectionSummary, type IntegrationProvider } from "@/lib/types";
 import { isProviderConfigured } from "@/lib/integrations/providers";
 import type { AuthorizationResult } from "@/lib/integrations/types";
+import { ensureUserWorkspace } from "@/lib/workspaces";
 
 const notes: Record<IntegrationProvider, string> = {
   meta: "Facebook Page publishing",
@@ -12,30 +13,31 @@ const notes: Record<IntegrationProvider, string> = {
   linkedin: "LinkedIn company Page publishing through the reviewed Community Management API",
 };
 
-async function defaultWorkspaceId() {
-  const result = await getPool().query("select id from workspaces where slug = 'default'");
-  const id = result.rows[0]?.id as string | undefined;
-  if (!id) throw new Error("The default workspace does not exist. Run db/schema.sql first.");
-  return id;
-}
-
 export async function createOAuthSession(input: {
+  userId: string;
+  displayName?: string;
+  projectId: string;
   provider: IntegrationProvider;
   state: string;
   binding: string;
   pkceVerifier?: string;
   returnTo?: string;
 }) {
-  const workspaceId = await defaultWorkspaceId();
+  const workspaceId = await ensureUserWorkspace(input.userId, input.displayName);
+  const owned = await getPool().query(
+    "select id from projects where id=$1::uuid and workspace_id=$2::uuid",
+    [input.projectId, workspaceId],
+  );
+  if (!owned.rowCount) throw new Error("Choose a valid project before connecting a social account.");
   const stateHash = await sha256Hex(input.state);
   const bindingHash = await sha256Hex(input.binding);
   const pkceCiphertext = input.pkceVerifier ? await encryptSecret(input.pkceVerifier) : null;
   const returnTo = input.returnTo?.startsWith("/") && !input.returnTo.startsWith("//") ? input.returnTo : "/dashboard?view=connections";
   await getPool().query(
     `insert into oauth_sessions (
-       workspace_id, provider, state_hash, binding_hash, pkce_verifier_ciphertext, return_to, expires_at
-     ) values ($1, $2, $3, $4, $5, $6, now() + interval '10 minutes')`,
-    [workspaceId, input.provider, stateHash, bindingHash, pkceCiphertext, returnTo],
+       workspace_id, project_id, provider, state_hash, binding_hash, pkce_verifier_ciphertext, return_to, expires_at
+     ) values ($1, $2, $3, $4, $5, $6, $7, now() + interval '10 minutes')`,
+    [workspaceId, input.projectId, input.provider, stateHash, bindingHash, pkceCiphertext, returnTo],
   );
 }
 
@@ -47,19 +49,21 @@ export async function consumeOAuthSession(provider: IntegrationProvider, state: 
         set consumed_at = now()
       where provider = $1 and state_hash = $2 and binding_hash = $3
         and consumed_at is null and expires_at > now()
-      returning pkce_verifier_ciphertext, return_to`,
+      returning workspace_id, project_id, pkce_verifier_ciphertext, return_to`,
     [provider, stateHash, bindingHash],
   );
-  const row = result.rows[0] as { pkce_verifier_ciphertext?: string; return_to: string } | undefined;
+  const row = result.rows[0] as { workspace_id: string; project_id: string; pkce_verifier_ciphertext?: string; return_to: string } | undefined;
   if (!row) throw new Error("The authorization request expired, was already used, or came from another browser.");
   return {
+    workspaceId: row.workspace_id,
+    projectId: row.project_id,
     pkceVerifier: row.pkce_verifier_ciphertext ? await decryptSecret(row.pkce_verifier_ciphertext) : undefined,
     returnTo: row.return_to,
   };
 }
 
-export async function saveAuthorization(result: AuthorizationResult) {
-  const workspaceId = await defaultWorkspaceId();
+export async function saveAuthorization(result: AuthorizationResult, context: { workspaceId: string; projectId: string }) {
+  const { workspaceId, projectId } = context;
   const accessCiphertext = await encryptSecret(result.token.accessToken);
   const refreshCiphertext = result.token.refreshToken ? await encryptSecret(result.token.refreshToken) : null;
   const encryptedAccounts = await Promise.all(result.accounts.map(async (account) => ({
@@ -71,11 +75,11 @@ export async function saveAuthorization(result: AuthorizationResult) {
     await client.query("begin");
     const integration = await client.query(
       `insert into integrations (
-         workspace_id, provider, provider_user_id, display_name, access_token_ciphertext,
+         workspace_id, project_id, provider, provider_user_id, display_name, access_token_ciphertext,
          refresh_token_ciphertext, token_expires_at, refresh_token_expires_at, scopes,
          status, last_error, last_verified_at, metadata
-       ) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'active', null, now(), $10)
-       on conflict (workspace_id, provider, provider_user_id) do update set
+       ) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'active', null, now(), $11)
+       on conflict (project_id, provider, provider_user_id) where project_id is not null do update set
          display_name = excluded.display_name,
          access_token_ciphertext = excluded.access_token_ciphertext,
          refresh_token_ciphertext = excluded.refresh_token_ciphertext,
@@ -89,7 +93,7 @@ export async function saveAuthorization(result: AuthorizationResult) {
          updated_at = now()
        returning id`,
       [
-        workspaceId, result.provider, result.providerUserId, result.displayName,
+        workspaceId, projectId, result.provider, result.providerUserId, result.displayName,
         accessCiphertext, refreshCiphertext, result.token.expiresAt ?? null,
         result.token.refreshExpiresAt ?? null, result.token.scopes, result.metadata ?? {},
       ],
@@ -108,10 +112,10 @@ export async function saveAuthorization(result: AuthorizationResult) {
       if (enabled) enabledCount += 1;
       await client.query(
         `insert into social_accounts (
-           workspace_id, integration_id, platform, provider_account_id, display_name,
+           workspace_id, project_id, integration_id, platform, provider_account_id, display_name,
            access_token_ciphertext, refresh_token_ciphertext, token_expires_at, scopes, enabled, metadata
-         ) values ($1, $2, $3, $4, $5, $6, null, $7, $8, $9, $10)
-         on conflict (workspace_id, platform, provider_account_id) do update set
+         ) values ($1, $2, $3, $4, $5, $6, $7, null, $8, $9, $10, $11)
+         on conflict (project_id, platform, provider_account_id) where project_id is not null do update set
            integration_id = excluded.integration_id,
            display_name = excluded.display_name,
            access_token_ciphertext = excluded.access_token_ciphertext,
@@ -121,7 +125,7 @@ export async function saveAuthorization(result: AuthorizationResult) {
            metadata = excluded.metadata,
            updated_at = now()`,
         [
-          workspaceId, integrationId, account.platform, account.providerAccountId,
+          workspaceId, projectId, integrationId, account.platform, account.providerAccountId,
           account.displayName, account.ciphertext, account.tokenExpiresAt ?? null,
           result.token.scopes, enabled, account.metadata ?? {},
         ],
@@ -141,7 +145,7 @@ export async function saveAuthorization(result: AuthorizationResult) {
   }
 }
 
-export async function listConnections(): Promise<ConnectionSummary[]> {
+export async function listConnections(userId: string, projectId?: string): Promise<ConnectionSummary[]> {
   const base = integrationProviders.map((provider) => ({
     provider,
     label: providerLabel[provider],
@@ -150,14 +154,16 @@ export async function listConnections(): Promise<ConnectionSummary[]> {
     accounts: [],
     note: notes[provider],
   } satisfies ConnectionSummary));
-  if (!hasDatabase()) return base;
+  if (!hasDatabase() || !projectId) return base;
 
   const integrations = await getPool().query(
-    `select distinct on (provider)
-       id, provider, display_name, status, token_expires_at
-     from integrations
-     where workspace_id = (select id from workspaces where slug = 'default')
-     order by provider, updated_at desc`,
+    `select distinct on (i.provider)
+       i.id, i.provider, i.display_name, i.status, i.token_expires_at
+     from integrations i
+     join workspaces w on w.id = i.workspace_id
+     where i.project_id = $2::uuid and w.owner_user_id = $1::uuid
+     order by i.provider, i.updated_at desc`,
+    [userId, projectId],
   );
   if (!integrations.rowCount) return base;
   const ids = integrations.rows.map((row) => row.id);
@@ -189,25 +195,28 @@ export async function listConnections(): Promise<ConnectionSummary[]> {
   });
 }
 
-export async function setEnabledSocialAccounts(integrationId: string, accountIds: string[]) {
+export async function setEnabledSocialAccounts(userId: string, integrationId: string, accountIds: string[]) {
   if (accountIds.length === 0) throw new Error("Choose at least one publishing destination.");
-  const workspaceId = await defaultWorkspaceId();
   const client = await getPool().connect();
   try {
     await client.query("begin");
     const owned = await client.query(
-      `select id from social_accounts
-        where workspace_id = $1 and integration_id = $2 and id = any($3::uuid[])`,
-      [workspaceId, integrationId, accountIds],
+      `select a.id from social_accounts a
+         join workspaces w on w.id = a.workspace_id
+        where w.owner_user_id = $1::uuid and a.integration_id = $2 and a.id = any($3::uuid[])`,
+      [userId, integrationId, accountIds],
     );
     if (owned.rowCount !== accountIds.length) throw new Error("One or more destinations do not belong to this connection.");
     await client.query(
-      "update social_accounts set enabled = false, updated_at = now() where workspace_id = $1 and integration_id = $2",
-      [workspaceId, integrationId],
+      `update social_accounts a set enabled = false, updated_at = now()
+        from workspaces w where w.id=a.workspace_id and w.owner_user_id=$1::uuid and a.integration_id=$2`,
+      [userId, integrationId],
     );
     await client.query(
-      "update social_accounts set enabled = true, updated_at = now() where workspace_id = $1 and integration_id = $2 and id = any($3::uuid[])",
-      [workspaceId, integrationId, accountIds],
+      `update social_accounts a set enabled = true, updated_at = now()
+        from workspaces w where w.id=a.workspace_id and w.owner_user_id=$1::uuid
+         and a.integration_id=$2 and a.id = any($3::uuid[])`,
+      [userId, integrationId, accountIds],
     );
     await client.query("commit");
     return accountIds;
@@ -219,13 +228,14 @@ export async function setEnabledSocialAccounts(integrationId: string, accountIds
   }
 }
 
-export async function getIntegrationSecret(id: string) {
+export async function getIntegrationSecret(id: string, userId?: string) {
   const result = await getPool().query(
     `select id, provider, access_token_ciphertext, refresh_token_ciphertext,
             token_expires_at, refresh_token_expires_at, scopes
-       from integrations
-      where id = $1 and workspace_id = (select id from workspaces where slug = 'default')`,
-    [id],
+       from integrations i
+      where i.id = $1
+        and ($2::uuid is null or exists (select 1 from workspaces w where w.id=i.workspace_id and w.owner_user_id=$2::uuid))`,
+    [id, userId ?? null],
   );
   const row = result.rows[0] as {
     id: string;
@@ -285,25 +295,25 @@ export async function updateIntegrationTokens(id: string, token: {
   }
 }
 
-export async function markIntegrationVerified(id: string) {
+export async function markIntegrationVerified(id: string, userId?: string) {
   await getPool().query(
     `update integrations set status = 'active', last_error = null, last_verified_at = now(), updated_at = now()
-      where id = $1 and workspace_id = (select id from workspaces where slug = 'default')`,
-    [id],
+      where id = $1 and ($2::uuid is null or workspace_id=(select id from workspaces where owner_user_id=$2::uuid))`,
+    [id, userId ?? null],
   );
 }
 
-export async function markIntegrationError(id: string, error: string) {
+export async function markIntegrationError(id: string, error: string, userId?: string) {
   await getPool().query(
     `update integrations set status = 'error', last_error = $2, updated_at = now()
-      where id = $1 and workspace_id = (select id from workspaces where slug = 'default')`,
-    [id, error.slice(0, 1000)],
+      where id = $1 and ($3::uuid is null or workspace_id=(select id from workspaces where owner_user_id=$3::uuid))`,
+    [id, error.slice(0, 1000), userId ?? null],
   );
 }
 
-export async function deleteIntegration(id: string) {
+export async function deleteIntegration(id: string, userId: string) {
   await getPool().query(
-    `delete from integrations where id = $1 and workspace_id = (select id from workspaces where slug = 'default')`,
-    [id],
+    `delete from integrations where id = $1 and workspace_id = (select id from workspaces where owner_user_id=$2::uuid)`,
+    [id, userId],
   );
 }

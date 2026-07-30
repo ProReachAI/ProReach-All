@@ -22,6 +22,8 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   if (!authData?.claims) redirect("/login");
 
   const claims = authData.claims as Record<string, unknown>;
+  const userId = typeof claims.sub === "string" ? claims.sub : undefined;
+  if (!userId) redirect("/login");
   const metadata = claims.user_metadata && typeof claims.user_metadata === "object"
     ? claims.user_metadata as Record<string, unknown>
     : {};
@@ -38,18 +40,23 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   let projects = [] as Awaited<ReturnType<typeof listProjects>>;
   let dataError: string | undefined;
   try {
-    connections = await listConnections();
-    if (hasDatabase()) projects = await listProjects();
+    if (hasDatabase()) projects = await listProjects(userId, name);
   } catch (error) {
     dataError = "The workspace database could not be reached. Check the Supabase database password and connection string.";
     console.warn("Dashboard data failed", error instanceof Error ? error.message : "Unknown error");
   }
   const requestedProject = typeof params.project === "string" ? params.project : undefined;
   const selectedProject = projects.find((project) => project.id === requestedProject) ?? projects[0] ?? null;
+  try {
+    connections = await listConnections(userId, selectedProject?.id);
+  } catch (error) {
+    dataError = "Social connections could not be loaded for this project.";
+    console.warn("Connection loading failed", error instanceof Error ? error.message : "Unknown error");
+  }
   let campaign = null as Awaited<ReturnType<typeof getLatestCampaign>>;
   if (selectedProject) {
     try {
-      campaign = await getLatestCampaign(selectedProject.id);
+      campaign = await getLatestCampaign(userId, selectedProject.id);
     } catch (error) {
       dataError = "Campaign data could not be loaded. Confirm that the current database schema has been applied.";
       console.warn("Campaign loading failed", error instanceof Error ? error.message : "Unknown error");
@@ -76,6 +83,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
           : undefined);
   return (
     <Dashboard
+      key={selectedProject?.id ?? "no-project"}
       projects={projects}
       selectedProject={selectedProject}
       initialCampaign={campaign}

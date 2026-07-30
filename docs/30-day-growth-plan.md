@@ -1,113 +1,123 @@
-# Prophrase: 30-day plan toward 1,000 users
+# ProReach: 30-day plan toward 1,000 activated users
+
+## Product identity
+
+ProReach is the central product and brand. It is an approval-first AI marketing workspace for founders, indie builders, lean marketing teams, and product marketers. It turns saved product truth into coordinated campaigns, channel-native drafts, visuals, approvals, schedules, and publish-ready posts.
+
+Customer projects such as Prophrase live **inside** ProReach. They are examples or customers, not alternate names for the platform.
 
 ## The honest target
 
-One thousand users in a month is possible, but posting everywhere is not the strategy. The strategy is to find one painful promise, repeatedly demonstrate it, and create enough distribution loops to earn roughly 50–70 qualified visits a day at a 5–8% signup rate, plus two or three launch spikes.
+One thousand signups in a month is possible, but 1,000 unactivated accounts are not success. Use one north-star event:
 
-Use one north-star event: **a new user completes the first valuable Prophrase action**. Track visits, signups, activation, invites, and seven-day retention separately. Do not optimize for follower count.
+> A new ProReach user creates a real project, saves useful product context, generates a campaign, and approves at least one channel-native draft.
+
+Track visitors, signups, completed project setup, first campaign, first approval, first publish, invitations, and seven-day retention separately. Do not optimize for follower count.
 
 ## Positioning to test in week one
 
-Start with one narrow audience and promise:
+Start with this narrow promise:
 
-> Prophrase helps non-native English professionals turn rough thoughts into clear, confident writing without losing their voice.
+> ProReach helps founders and lean teams turn product truth into coordinated social campaigns—without surrendering accuracy or final creative control.
 
-Validate or replace this after ten customer conversations. Each post should speak to a concrete moment: sending a client email, writing a LinkedIn post, replying to a manager, or polishing a proposal.
+Validate or replace it after ten conversations with founders or product marketers. Each post should address a concrete moment: launching a feature, maintaining several channels, converting product knowledge into content, reviewing AI drafts, or keeping claims accurate.
 
-## Channel roles
+## Central channel roles
 
 | Channel | Job | Cadence | Native format |
 |---|---|---:|---|
-| LinkedIn | Founder credibility and professional use cases | 1 post/day, 5 days/week | story, teardown, document carousel |
-| X | Fast feedback, build-in-public, conversations | 2 useful posts/day + replies | short insight, before/after, thread |
-| Threads | Reach and conversational ideas | 1–2 posts/day | opinion, prompt, compact story |
-| Instagram | Demonstrations and saves | 4 reels + 3 carousels/week | screen demo, writing makeover |
-| Communities | High-intent discovery | 3 genuinely helpful contributions/week | answer first, product only when relevant |
-| Product/Email | Activation and referrals | onboarding + weekly digest | use-case templates, invite loop |
+| LinkedIn | Founder credibility, product-marketing insight, and B2B use cases | 1 post/day, 5 days/week | founder story, teardown, document carousel |
+| X | Build in public, rapid feedback, and founder conversations | 2 useful posts/day plus replies | short insight, product decision, thread |
+| YouTube | Product education and durable discovery | 2 Shorts plus 1 walkthrough/week | workflow demo, campaign teardown |
+| TikTok | Discoverable, concise marketing education | 3 short videos/week | founder problem, before/after workflow, screen demo |
+| Communities | High-intent discovery and research | 3 genuinely helpful contributions/week | answer first; mention ProReach only when relevant |
+| Product and email | Activation, retention, and referrals | onboarding plus weekly digest | templates, setup guidance, approval reminders |
 
-Cross-post the idea, not identical copy. The agent should generate a distinct version per channel.
+Meta channels remain deferred until the central Meta identity is healthy. Cross-post the idea, not identical copy.
 
 ## Content pillars
 
-Use a 40/25/20/15 mix:
+Use a 35/25/20/20 mix:
 
-1. **Writing makeovers (40%)** — show a weak sentence, a better sentence, and why it works.
-2. **Pain and insight (25%)** — name the awkward professional moments users already experience.
-3. **Building Prophrase (20%)** — decisions, failures, small metrics, and user feedback.
-4. **Offers and proof (15%)** — product demos, testimonials, challenges, and direct signup asks.
+1. **Practical marketing systems (35%)** — campaign briefs, approval checklists, channel adaptation, and content operations.
+2. **Campaign teardowns (25%)** — show one product truth becoming several native posts and explain the decisions.
+3. **Building ProReach (20%)** — product decisions, failures, safeguards, integrations, and real lessons.
+4. **Product proof and offers (20%)** — demos, approved customer stories, testimonials, launches, and direct signup invitations.
 
-Every week needs one repeatable series, such as “Make this email sound confident in 20 seconds.” Series compound recognition faster than unrelated posts.
+Customer material must remain customer-owned. Use a customer name, logo, content, or result on ProReach channels only with permission.
 
 ## Weekly execution
 
-### Days 1–3: instrumentation and message
+### Days 1–3: foundation and measurement
 
-- Define visitor -> signup -> activation -> retained events.
-- Add a simple source/UTM convention to every link.
-- Interview ten target users; collect their exact phrases and awkward writing examples.
-- Create one landing page per top use case, not per feature.
-- Prepare 15 before/after examples and three short screen recordings.
+- Finish the central ProReach account profile kit and reserve consistent handles.
+- Define visitor -> signup -> project setup -> campaign -> approval -> publish -> retained events.
+- Add a platform-specific UTM convention to every central account link.
+- Interview ten founders or lean marketers and capture their exact language.
+- Prepare three product demos, ten campaign examples, and one clear founder story.
 
 ### Days 4–7: seed the system
 
-- Publish the founder story and three writing makeovers.
-- Personally reply to 20 relevant conversations per day on LinkedIn, X, and Threads.
-- Invite 30 highly relevant people individually; ask for a 15-minute observation call, not generic feedback.
+- Publish the ProReach founder story and three useful marketing-system posts.
+- Publish one complete demonstration of a product brief becoming channel-native drafts.
+- Personally leave 20 thoughtful replies per day across LinkedIn and X.
+- Invite 30 highly relevant founders individually to an observation call, not a generic sales call.
 - Fix the largest activation drop before increasing traffic.
 
-### Week 2: prove one format
+### Week 2: prove one repeatable format
 
-- Run three hook variants around the same winning use case.
-- Publish at least four short demos and one LinkedIn document post.
-- Start a seven-day writing challenge with a shareable result.
-- Ask every activated user one question: “What almost stopped you from trying this?”
+- Test three hooks around the same high-value use case.
+- Publish at least three short demos and one LinkedIn document post.
+- Start a repeatable series such as “One product truth, five native posts.”
+- Ask every activated user: “What almost stopped you from approving your first campaign?”
+- Turn common objections into onboarding improvements and educational content.
 
-### Week 3: launch spike
+### Week 3: create a launch spike
 
-- Prepare a focused Product Hunt or relevant community launch only after activation is healthy.
-- Coordinate 10–15 early users to share honest results on launch day.
-- Publish the same product proof as four native stories over 48 hours.
-- Contact 30 micro-creators/newsletters whose audience exactly matches the use case; offer useful data, an expert quote, or a free audience resource—not a generic promotion request.
+- Prepare a Product Hunt or relevant founder-community launch only after activation is healthy.
+- Use a real founder account that has existed for at least one week for Product Hunt activity.
+- Coordinate 10–15 genuine early users to share honest results or feedback.
+- Publish the same proof as native LinkedIn, X, YouTube, and TikTok stories over 48 hours.
+- Contact 30 highly relevant micro-creators or newsletters with useful data, a teardown, or a reusable resource.
 
 ### Week 4: compound the winner
 
-- Turn the top 10% of posts into new hooks, carousels, videos, and landing-page proof.
-- Pause formats with impressions but no profile visits or signups.
-- Add an in-product referral: both people receive a meaningful usage benefit.
-- Publish a transparent 30-day result with lessons and numbers.
+- Turn the top 10% of ideas into new hooks, formats, demos, and landing-page proof.
+- Pause formats that produce impressions but no qualified visits or activation.
+- Add an in-product referral with a meaningful usage benefit.
+- Publish a transparent 30-day ProReach result with lessons and numbers.
+- Decide which reserved accounts deserve activation in month two.
 
 ## Daily 45-minute human loop
 
-Automation removes drafting and scheduling, not trust-building. Reserve:
+- 15 minutes to approve or edit the ProReach content queue.
+- 20 minutes to leave thoughtful replies in relevant founder and marketing conversations.
+- 10 minutes to answer users and capture language for tomorrow's content.
 
-- 15 minutes to approve or edit the agent’s queue.
-- 20 minutes to leave thoughtful replies on relevant posts.
-- 10 minutes to answer users and capture language for tomorrow’s content.
-
-Do not automate comments, DMs, fake engagement, or unsolicited mass outreach. Those actions damage trust and can violate platform rules.
+Do not automate comments, DMs, fake engagement, unsolicited mass outreach, or customer-account interactions. Automation removes drafting and scheduling work; it does not replace trust.
 
 ## Experiment scorecard
 
-Review weekly, not emotionally after every post:
-
 | Metric | Diagnostic question |
 |---|---|
-| Hook hold / impressions | Did the opening earn attention? |
+| Hook hold and impressions | Did the opening earn attention? |
 | Saves and shares | Was it useful enough to keep or send? |
-| Profile/link visits | Did curiosity transfer to the product? |
+| Profile and link visits | Did curiosity transfer to ProReach? |
 | Signup conversion | Did the landing page continue the same promise? |
-| Activation | Did users reach value quickly? |
-| Seven-day retention | Did the product solve a recurring problem? |
+| Project setup | Did the user provide enough truth for useful output? |
+| First campaign and approval | Did the user reach the core value? |
+| First publish | Did ProReach complete the workflow? |
+| Seven-day retention | Does the user have a recurring marketing need? |
 
-Promote a content angle only after it produces downstream visits or activations, not merely likes.
+Promote an angle only after it produces downstream activation, not merely likes.
 
-## A realistic acquisition model
+## Planning hypothesis
 
-Treat this as a planning hypothesis, not a forecast:
+Treat this as a hypothesis, not a forecast:
 
-- 500 users from two launch/community spikes.
+- 400 activated users from two launch or community spikes.
 - 250 from consistent organic social and founder replies.
-- 150 from referrals and shared outputs.
-- 100 from micro-partnerships and newsletters.
+- 200 from referrals and shared campaign outputs.
+- 150 from micro-partnerships, newsletters, and search-driven demos.
 
-If week one activation is below 30%, stop chasing reach and fix onboarding. Sending more people into a leaky funnel will not create 1,000 meaningful users.
+If week-one activation from signup to first approved draft is below 30%, stop chasing reach and improve setup, generation quality, and approval flow first.

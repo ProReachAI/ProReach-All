@@ -111,7 +111,7 @@ export default async function IntegrationSetupPage() {
               <div className="setup-field"><label>Environment</label>{provider.env.map((value) => <code key={value}>{value}</code>)}</div>
               <div className="setup-field"><label>Requested scopes</label><div className="scope-list">{provider.scopes.map((scope) => <span key={scope}>{scope}</span>)}</div></div>
               <ol>{provider.steps.map((step) => <li key={step}>{step}</li>)}</ol>
-              <Link className="setup-connect" href={provider.id === "linkedin" ? "/api/oauth/linkedin?mode=organization" : `/api/oauth/${provider.id}`}><KeyRound size={14} /> Test {provider.id === "linkedin" ? "LinkedIn company Page" : provider.name} OAuth</Link>
+              <Link className="setup-connect" href="/dashboard?view=connections"><KeyRound size={14} /> Test from a selected project</Link>
             </section>
           )})}
         </div>

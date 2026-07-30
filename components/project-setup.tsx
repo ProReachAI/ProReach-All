@@ -1,8 +1,9 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, Check, ImagePlus, LoaderCircle, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, ImagePlus, LoaderCircle, Sparkles, X } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
+import type { WebsiteProfile } from "@/lib/ai/project-profile";
 import type { ProductProject } from "@/lib/types";
 
 type ProjectForm = {
@@ -80,6 +81,8 @@ export function ProjectSetup({ project, onClose, onSaved }: {
   const [form, setForm] = useState(() => fromProject(project));
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [autofillLoading, setAutofillLoading] = useState(false);
+  const [autofillStatus, setAutofillStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(project?.logoUrl ?? null);
@@ -98,6 +101,42 @@ export function ProjectSetup({ project, onClose, onSaved }: {
 
   function field(name: keyof ProjectForm, value: string) {
     setForm((current) => ({ ...current, [name]: value }));
+  }
+
+  async function autofillFromWebsite() {
+    if (autofillLoading) return;
+    if (!form.websiteUrl.trim()) { setError("Enter a website URL to autofill the project."); return; }
+    setAutofillLoading(true); setAutofillStatus(null); setError(null);
+    try {
+      const response = await fetch("/api/projects/autofill", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ websiteUrl: form.websiteUrl }),
+      });
+      const result = await response.json() as {
+        error?: string;
+        profile?: WebsiteProfile;
+        websiteUrl?: string;
+        pagesAnalyzed?: number;
+      };
+      if (!response.ok || !result.profile || !result.websiteUrl) {
+        throw new Error(result.error ?? "The website could not be analyzed.");
+      }
+      setForm((current) => ({
+        ...current,
+        ...result.profile,
+        websiteUrl: result.websiteUrl ?? current.websiteUrl,
+        keyFeatures: result.profile?.keyFeatures.join("\n") ?? current.keyFeatures,
+        wordsToUse: result.profile?.wordsToUse.join("\n") ?? current.wordsToUse,
+        wordsToAvoid: result.profile?.wordsToAvoid.join("\n") ?? current.wordsToAvoid,
+      }));
+      const count = result.pagesAnalyzed ?? 1;
+      setAutofillStatus(`Filled every project section from ${count} website ${count === 1 ? "page" : "pages"}. Review and edit anything before saving.`);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "The website could not be analyzed.");
+    } finally {
+      setAutofillLoading(false);
+    }
   }
 
   async function save() {
@@ -146,7 +185,30 @@ export function ProjectSetup({ project, onClose, onSaved }: {
             {step === 0 && <>
               <div className="form-grid project-form-grid">
                 <Input label="Product name" value={form.name} onChange={(value) => field("name", value)} required placeholder="Your product name" />
-                <Input label="Website" value={form.websiteUrl} onChange={(value) => field("websiteUrl", value)} placeholder="https://…" />
+                <label className="website-autofill-field">
+                  Website
+                  <span className="website-input-row">
+                    <input
+                      value={form.websiteUrl}
+                      onChange={(event) => { field("websiteUrl", event.target.value); setAutofillStatus(null); }}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") { event.preventDefault(); void autofillFromWebsite(); }
+                      }}
+                      placeholder="https://…"
+                      inputMode="url"
+                      disabled={autofillLoading}
+                    />
+                    <button type="button" className="website-autofill-button" onClick={autofillFromWebsite} disabled={autofillLoading || !form.websiteUrl.trim()}>
+                      {autofillLoading ? <LoaderCircle className="spin" size={14} /> : <Sparkles size={14} />}
+                      {autofillLoading ? "Reading…" : "Autofill"}
+                    </button>
+                  </span>
+                  <small>We’ll read the site and prefill all four editable sections.</small>
+                </label>
+                {(autofillLoading || autofillStatus) && <p className={`wide website-autofill-status${autofillLoading ? " loading" : ""}`} aria-live="polite">
+                  {autofillLoading ? <LoaderCircle className="spin" size={15} /> : <Check size={15} />}
+                  {autofillLoading ? "Reading the website and building your product context…" : autofillStatus}
+                </p>}
                 <label className="wide brand-logo-field">
                   Brand logo <small>Recommended · PNG, JPEG or WebP · max 5 MB</small>
                   <span className="brand-logo-picker">
@@ -204,7 +266,7 @@ export function ProjectSetup({ project, onClose, onSaved }: {
         <footer className="wizard-footer">
           <button className="ghost-button" onClick={step === 0 ? onClose : () => setStep((value) => value - 1)}>{step === 0 ? "Cancel" : <><ArrowLeft size={15} /> Back</>}</button>
           {step < steps.length - 1
-            ? <button className="primary-button" disabled={!stepComplete} onClick={() => setStep((value) => value + 1)}>Continue <ArrowRight size={15} /></button>
+            ? <button className="primary-button" disabled={!stepComplete || autofillLoading} onClick={() => setStep((value) => value + 1)}>Continue <ArrowRight size={15} /></button>
             : <button className="primary-button" disabled={!stepComplete || loading} onClick={save}>{loading ? <LoaderCircle className="spin" size={16} /> : <Check size={16} />}{loading ? "Saving…" : isEditing ? "Save context" : "Create project"}</button>}
         </footer>
       </section>

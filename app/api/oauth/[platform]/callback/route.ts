@@ -15,32 +15,36 @@ export async function GET(request: Request, context: { params: Promise<{ platfor
   const cookieStore = await cookies();
   const cookieName = returnedState ? `oauth_binding_${value}_${returnedState.slice(0, 12)}` : "";
   const binding = cookieName ? cookieStore.get(cookieName)?.value : undefined;
+  let projectId: string | undefined;
   if (cookieName) cookieStore.delete(cookieName);
 
   try {
     if (!returnedState || !binding) throw new Error("OAuth browser binding is missing.");
     const session = await consumeOAuthSession(value, returnedState, binding);
-    if (providerError) return redirectToConnections({ provider: value, outcome: "cancelled" });
+    projectId = session.projectId;
+    if (providerError) return redirectToConnections({ provider: value, projectId: session.projectId, outcome: "cancelled" });
     if (!code) throw new Error("The provider did not return an authorization code.");
     const result = await completeAuthorization(value, code, session.pkceVerifier);
-    const saved = await saveAuthorization(result);
+    const saved = await saveAuthorization(result, { workspaceId: session.workspaceId, projectId: session.projectId });
     return redirectToConnections({
       provider: value,
+      projectId: session.projectId,
       outcome: "connected",
       accounts: result.accounts.length,
       selectIntegration: saved.requiresSelection ? saved.integrationId : undefined,
     });
   } catch (error) {
     console.error("OAuth callback failed", error instanceof Error ? error.message : "Unknown error");
-    return redirectToConnections({ provider: value, outcome: "failed" });
+    return redirectToConnections({ provider: value, projectId, outcome: "failed" });
   }
 }
 
-function redirectToConnections(input: { provider: string; outcome: "connected" | "cancelled" | "failed"; accounts?: number; selectIntegration?: string }) {
+function redirectToConnections(input: { provider: string; projectId?: string; outcome: "connected" | "cancelled" | "failed"; accounts?: number; selectIntegration?: string }) {
   const target = new URL("/dashboard", process.env.APP_URL ?? "http://localhost:3000");
   target.searchParams.set("view", "connections");
   target.searchParams.set("integration", input.outcome);
   target.searchParams.set("provider", input.provider);
+  if (input.projectId) target.searchParams.set("project", input.projectId);
   if (input.accounts !== undefined) target.searchParams.set("accounts", String(input.accounts));
   if (input.selectIntegration) target.searchParams.set("select_integration", input.selectIntegration);
   return NextResponse.redirect(target);

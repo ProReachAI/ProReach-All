@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { claimPostNow, hasDatabase } from "@/lib/db";
 import { dispatchPost } from "@/lib/platforms/dispatch";
+import { requireAuthenticatedUser } from "@/lib/auth/user";
 
 export const runtime = "nodejs";
 const ParamsSchema = z.object({ id: z.string().uuid() });
@@ -10,9 +11,10 @@ const BodySchema = z.object({ socialAccountId: z.string().uuid() });
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
     if (!hasDatabase()) return NextResponse.json({ error: "DATABASE_URL is required to publish posts." }, { status: 503 });
+    const user = await requireAuthenticatedUser();
     const { id } = ParamsSchema.parse(await context.params);
     const body = BodySchema.parse(await request.json());
-    const post = await claimPostNow(id, body.socialAccountId);
+    const post = await claimPostNow(user.id, id, body.socialAccountId);
     if (!post) return NextResponse.json({ error: "Approve this post and connect its destination account before publishing." }, { status: 409 });
     // A synchronous failure remains approved so the user can correct the
     // destination/content and retry without losing the approval decision.

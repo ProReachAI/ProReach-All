@@ -18,7 +18,7 @@ Do not enter the ProReach callback URL in Google's **Authorized redirect URIs** 
 5. Save the full value as `DATABASE_URL` in Vercel. Never use a `NEXT_PUBLIC_` prefix for this value.
 
 If the database password contains reserved URL or environment characters such as `$`, percent-encode them in the connection URI (for example, `$` becomes `%24`). This prevents `.env` expansion from changing the password before PostgreSQL receives it.
-6. In Supabase **SQL Editor**, create a new query, paste the contents of `db/schema.sql`, and run it once. The script is repeat-safe and creates the `default` workspace required by the current single-workspace application.
+6. In Supabase **SQL Editor**, create a new query, paste the contents of `db/schema.sql`, and run it once. Existing deployments should apply migrations through `0011_project_scoped_tenancy.sql`.
 
 Typical pooler shape (always use the exact host and username shown by your project):
 
@@ -117,4 +117,4 @@ After adding or changing Vercel variables, trigger a new production deployment; 
 
 ## Current access model
 
-Authentication now protects the dashboard and application APIs, but product data still belongs to the schema's single `default` workspace. Until user-to-workspace membership is implemented, every Google account permitted by the Supabase Google provider reaches that same workspace. For a private rollout, keep the Google OAuth app in testing with an explicit test-user list or use an Internal Google Workspace audience.
+Each verified Supabase user owns a private workspace. Projects and their OAuth grants, social accounts, campaigns, posts, and publishing destinations are isolated inside that workspace. The original `default` workspace is assigned to `nagapavan009@gmail.com` during migration so existing data remains with its owner. Project-count subscription limits can be added later without changing this ownership model.

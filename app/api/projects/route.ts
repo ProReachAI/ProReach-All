@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { createProject, listProjects } from "@/lib/projects";
+import { requireAuthenticatedUser } from "@/lib/auth/user";
 
 export const runtime = "nodejs";
 
 export async function GET() {
   try {
-    return NextResponse.json({ projects: await listProjects() });
+    const user = await requireAuthenticatedUser();
+    return NextResponse.json({ projects: await listProjects(user.id, user.name) });
   } catch (error) {
     console.error("Project listing failed", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json({ error: "Projects could not be loaded." }, { status: 500 });
@@ -15,7 +17,8 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const project = await createProject(await request.json());
+    const user = await requireAuthenticatedUser();
+    const project = await createProject(user.id, user.name, await request.json());
     return NextResponse.json({ project }, { status: 201 });
   } catch (error) {
     if (error instanceof ZodError) {

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { deleteIntegration, getIntegrationSecret, setEnabledSocialAccounts } from "@/lib/integrations/repository";
 import { revokeProviderToken } from "@/lib/integrations/providers";
+import { requireAuthenticatedUser } from "@/lib/auth/user";
 
 export const runtime = "nodejs";
 
@@ -13,7 +14,8 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   const { id } = await context.params;
   try {
     const payload = selectionSchema.parse(await request.json());
-    const accountIds = await setEnabledSocialAccounts(id, [...new Set(payload.accountIds)]);
+    const user = await requireAuthenticatedUser();
+    const accountIds = await setEnabledSocialAccounts(user.id, id, [...new Set(payload.accountIds)]);
     return NextResponse.json({ accountIds });
   } catch (error) {
     const message = error instanceof z.ZodError
@@ -26,7 +28,8 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
 export async function DELETE(_: Request, context: { params: Promise<{ id: string }> }) {
   const { id } = await context.params;
   try {
-    const integration = await getIntegrationSecret(id);
+    const user = await requireAuthenticatedUser();
+    const integration = await getIntegrationSecret(id, user.id);
     if (!integration) return NextResponse.json({ error: "Integration not found." }, { status: 404 });
     let remoteRevocation = "not_supported";
     try {
@@ -36,7 +39,7 @@ export async function DELETE(_: Request, context: { params: Promise<{ id: string
       remoteRevocation = "failed";
       console.warn("Remote token revocation failed", integration.provider, error instanceof Error ? error.message : "Unknown error");
     }
-    await deleteIntegration(id);
+    await deleteIntegration(id, user.id);
     return NextResponse.json({ disconnected: true, remoteRevocation });
   } catch (error) {
     console.error("Integration disconnect failed", error instanceof Error ? error.message : "Unknown error");

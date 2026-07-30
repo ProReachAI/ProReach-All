@@ -5,23 +5,25 @@ import { CampaignRequestSchema, generateCampaign } from "@/lib/ai/campaign";
 import { dailyAILimit } from "@/lib/ai/limits";
 import { hasDatabase, releaseAIUsage, reserveAIUsage, saveCampaign } from "@/lib/db";
 import { getProject } from "@/lib/projects";
+import { requireAuthenticatedUser } from "@/lib/auth/user";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   try {
     if (!hasDatabase()) return NextResponse.json({ error: "DATABASE_URL is required for project-based generation." }, { status: 503 });
+    const user = await requireAuthenticatedUser();
     const brief = CampaignRequestSchema.parse(await request.json());
-    const project = await getProject(brief.projectId);
+    const project = await getProject(user.id, brief.projectId);
     if (!project) return NextResponse.json({ error: "Select a valid project before generating." }, { status: 404 });
-    const reserved = await reserveAIUsage("campaign", dailyAILimit("campaign"));
+    const reserved = await reserveAIUsage(user.id, "campaign", dailyAILimit("campaign"));
     if (!reserved) {
       return NextResponse.json({ error: "The daily free campaign limit has been reached. Try again after 05:30 AM IST." }, { status: 429 });
     }
     try {
       const campaign = await generateCampaign(project, brief);
       try {
-        await saveCampaign(campaign, brief);
+        await saveCampaign(user.id, campaign, brief);
       } catch (error) {
         console.error("Generated campaign could not be saved", error instanceof Error ? error.message : "Unknown error");
         return NextResponse.json({ error: "Drafts were generated but could not be saved. Check that all database migrations have been applied, then try again." }, { status: 500 });
@@ -29,7 +31,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ campaign, mode: "cloudflare" });
     } catch (error) {
       try {
-        await releaseAIUsage("campaign");
+        await releaseAIUsage(user.id, "campaign");
       } catch (releaseError) {
         // Quota cleanup must never hide the actual provider or validation error.
         console.error("Campaign quota reservation could not be released", releaseError);

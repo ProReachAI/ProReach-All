@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { getProject, updateProject } from "@/lib/projects";
+import { requireAuthenticatedUser } from "@/lib/auth/user";
 
 export const runtime = "nodejs";
 
 export async function GET(_: Request, context: { params: Promise<{ id: string }> }) {
   const { id } = await context.params;
-  const project = await getProject(id);
+  const user = await requireAuthenticatedUser();
+  const project = await getProject(user.id, id);
   return project
     ? NextResponse.json({ project })
     : NextResponse.json({ error: "Project not found." }, { status: 404 });
@@ -15,7 +17,8 @@ export async function GET(_: Request, context: { params: Promise<{ id: string }>
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await context.params;
-    const project = await updateProject(id, await request.json());
+    const user = await requireAuthenticatedUser();
+    const project = await updateProject(user.id, id, await request.json());
     return project
       ? NextResponse.json({ project })
       : NextResponse.json({ error: "Project not found." }, { status: 404 });

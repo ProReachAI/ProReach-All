@@ -3,6 +3,7 @@ import sharp from "sharp";
 import { z } from "zod";
 import { getProject, setProjectLogo } from "@/lib/projects";
 import { deleteGeneratedImage, uploadProjectLogo } from "@/lib/media/r2";
+import { requireAuthenticatedUser } from "@/lib/auth/user";
 
 export const runtime = "nodejs";
 
@@ -14,7 +15,8 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   let uploaded: { key: string; url: string } | undefined;
   try {
     const { id } = ParamsSchema.parse(await context.params);
-    const project = await getProject(id);
+    const user = await requireAuthenticatedUser();
+    const project = await getProject(user.id, id);
     if (!project) return NextResponse.json({ error: "Project not found." }, { status: 404 });
 
     const form = await request.formData();
@@ -36,7 +38,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       .toBuffer();
 
     uploaded = await uploadProjectLogo({ bytes: logo, projectId: id });
-    const updated = await setProjectLogo(id, uploaded.url, uploaded.key);
+    const updated = await setProjectLogo(user.id, id, uploaded.url, uploaded.key);
     if (!updated) throw new Error("The project changed while its logo was being uploaded.");
 
     if (project.logoKey && project.logoKey !== uploaded.key) {

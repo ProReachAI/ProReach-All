@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { approvePost, createPostVariant, hasDatabase, scheduleApprovedPost, updatePostContent } from "@/lib/db";
 import { platforms } from "@/lib/types";
+import { requireAuthenticatedUser } from "@/lib/auth/user";
 
 export const runtime = "nodejs";
 const ParamsSchema = z.object({ id: z.string().uuid() });
@@ -26,26 +27,27 @@ function normalizeHashtags(values: string[]) {
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
     if (!hasDatabase()) return NextResponse.json({ error: "DATABASE_URL is required to manage posts." }, { status: 503 });
+    const user = await requireAuthenticatedUser();
     const body = BodySchema.parse(await request.json());
     const { id } = ParamsSchema.parse(await context.params);
     if (body.action === "approve") {
-      const status = await approvePost(id);
+      const status = await approvePost(user.id, id);
       if (!status) return NextResponse.json({ error: "Post was not found or cannot be approved." }, { status: 404 });
       return NextResponse.json({ id, status });
     }
     if (body.action === "create_variant") {
-      const post = await createPostVariant(id, body.platform);
+      const post = await createPostVariant(user.id, id, body.platform);
       if (!post) return NextResponse.json({ error: "The source post was not found or cannot be copied." }, { status: 404 });
       return NextResponse.json({ post });
     }
     if (body.action === "update") {
-      const updated = await updatePostContent(id, { ...body, hashtags: normalizeHashtags(body.hashtags) });
+      const updated = await updatePostContent(user.id, id, { ...body, hashtags: normalizeHashtags(body.hashtags) });
       if (!updated) return NextResponse.json({ error: "This post cannot be edited after publishing has started." }, { status: 409 });
       return NextResponse.json({ id, ...updated });
     }
     const scheduledFor = new Date(body.scheduledFor);
     if (scheduledFor.getTime() <= Date.now()) return NextResponse.json({ error: "Choose a future publishing time." }, { status: 400 });
-    const result = await scheduleApprovedPost(id, scheduledFor, body.socialAccountId);
+    const result = await scheduleApprovedPost(user.id, id, scheduledFor, body.socialAccountId);
     if (!result) return NextResponse.json({ error: "Approve this post and connect its destination account before scheduling." }, { status: 409 });
     return NextResponse.json({ id, status: result.status, scheduledFor: result.scheduledFor.toISOString() });
   } catch (error) {

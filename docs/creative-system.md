@@ -1,6 +1,6 @@
-# BuildToReach creative system
+# ProReach creative system
 
-BuildToReach treats social media as product advertising, not generic image generation. Every visual must pass a three-second test: a new viewer should understand both the customer's tension and what the product changes before reading the caption.
+ProReach treats social media as product advertising, not generic image generation. Every visual must pass a three-second test: a new viewer should understand both the customer's tension and what the product changes before reading the caption.
 
 ## Creative archetypes
 
@@ -30,7 +30,7 @@ The creative director rotates among these concepts and avoids recently used styl
 1. Campaign generation creates a product-grounded hook, post, CTA, media format, and frame script.
 2. The creative director selects a non-recent archetype and states the visible product mechanism.
 3. FLUX creates only the 4:5 background scene with a protected typography zone.
-4. BuildToReach adds exact English copy, the uploaded logo, CTA, and deterministic product graphics.
+4. ProReach adds exact English copy, the uploaded logo, CTA, and deterministic product graphics.
 5. Carousel and motion renderers reuse the same creative archetype, so the campaign varies without losing brand consistency.
 
 Static posts and carousels use a 4:5 feed composition. Motion uses a 4:5 three-beat loop: tension, product mechanism, outcome/CTA. Native Instagram Reel publishing still requires an MP4 encoder; the current motion renderer produces an animated GIF for supported destinations and previewing.

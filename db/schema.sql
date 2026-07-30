@@ -4,6 +4,7 @@ create table if not exists workspaces (
   id uuid primary key default gen_random_uuid(),
   name text not null,
   slug text not null unique,
+  owner_user_id uuid unique,
   created_at timestamptz not null default now()
 );
 
@@ -77,6 +78,7 @@ end $$;
 create table if not exists integrations (
   id uuid primary key default gen_random_uuid(),
   workspace_id uuid not null references workspaces(id) on delete cascade,
+  project_id uuid not null references projects(id) on delete cascade,
   provider integration_provider not null,
   provider_user_id text not null,
   display_name text,
@@ -91,12 +93,13 @@ create table if not exists integrations (
   metadata jsonb not null default '{}',
   connected_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  unique (workspace_id, provider, provider_user_id)
+  unique (project_id, provider, provider_user_id)
 );
 
 create table if not exists oauth_sessions (
   id uuid primary key default gen_random_uuid(),
   workspace_id uuid not null references workspaces(id) on delete cascade,
+  project_id uuid not null references projects(id) on delete cascade,
   provider integration_provider not null,
   state_hash text not null unique,
   binding_hash text not null,
@@ -112,6 +115,7 @@ create index if not exists oauth_sessions_expiry_idx on oauth_sessions (expires_
 create table if not exists social_accounts (
   id uuid primary key default gen_random_uuid(),
   workspace_id uuid not null references workspaces(id) on delete cascade,
+  project_id uuid not null references projects(id) on delete cascade,
   integration_id uuid references integrations(id) on delete cascade,
   platform social_platform not null,
   provider_account_id text not null,
@@ -124,12 +128,13 @@ create table if not exists social_accounts (
   metadata jsonb not null default '{}',
   connected_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  unique (workspace_id, platform, provider_account_id)
+  unique (project_id, platform, provider_account_id)
 );
 
 alter table social_accounts add column if not exists integration_id uuid references integrations(id) on delete cascade;
 alter table social_accounts add column if not exists enabled boolean not null default true;
 create index if not exists social_accounts_integration_idx on social_accounts (integration_id);
+create index if not exists social_accounts_project_idx on social_accounts (project_id, platform, enabled);
 
 create table if not exists campaigns (
   id uuid primary key default gen_random_uuid(),
@@ -184,6 +189,7 @@ create table if not exists ai_daily_usage (
   usage_date date not null,
   campaign_count integer not null default 0 check (campaign_count >= 0),
   image_count integer not null default 0 check (image_count >= 0),
+  profile_count integer not null default 0 check (profile_count >= 0),
   updated_at timestamptz not null default now(),
   primary key (workspace_id, usage_date)
 );
@@ -208,3 +214,14 @@ create table if not exists daily_metrics (
   raw jsonb not null default '{}',
   unique (post_id, metric_date)
 );
+
+alter table workspaces enable row level security;
+alter table projects enable row level security;
+alter table integrations enable row level security;
+alter table oauth_sessions enable row level security;
+alter table social_accounts enable row level security;
+alter table campaigns enable row level security;
+alter table posts enable row level security;
+alter table ai_daily_usage enable row level security;
+alter table publishing_events enable row level security;
+alter table daily_metrics enable row level security;

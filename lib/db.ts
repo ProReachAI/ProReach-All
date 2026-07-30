@@ -1,6 +1,6 @@
 import { userInfo } from "node:os";
 import { Pool, type PoolClient, type PoolConfig } from "pg";
-import { decryptSecret, encryptSecret } from "@/lib/security/crypto";
+import { decryptSecret } from "@/lib/security/crypto";
 import type { Campaign, MediaAsset, MediaPlan, MediaType, Platform } from "@/lib/types";
 
 let pool: Pool | undefined;
@@ -36,16 +36,16 @@ export function hasDatabase() {
   return Boolean(process.env.DATABASE_URL);
 }
 
-export async function saveCampaign(campaign: Campaign, brief: Record<string, unknown>) {
+export async function saveCampaign(userId: string, campaign: Campaign, brief: Record<string, unknown>) {
   const client = await getPool().connect();
   try {
     await client.query("begin");
     const created = await client.query(
       `insert into campaigns (id, workspace_id, project_id, name, thesis, audience, brief)
        select $1, workspace_id, id, $3, $4, $5, $6 from projects
-        where id = $2 and workspace_id = (select id from workspaces where slug = 'default')
+        where id = $2 and workspace_id = (select id from workspaces where owner_user_id = $7::uuid)
        returning id`,
-      [campaign.id, campaign.projectId, campaign.name, campaign.thesis, campaign.audience, brief],
+      [campaign.id, campaign.projectId, campaign.name, campaign.thesis, campaign.audience, brief, userId],
     );
     if (!created.rowCount) throw new Error("The selected project no longer exists.");
     for (const post of campaign.posts) {
@@ -54,13 +54,13 @@ export async function saveCampaign(campaign: Campaign, brief: Record<string, unk
            id, campaign_id, workspace_id, social_account_id, platform, pillar,
            hook, body, cta, hashtags, media_brief, media_type, media_plan, media_items, media_url, media_key, status, scheduled_for
          ) values (
-           $1, $2, (select id from workspaces where slug = 'default'),
-           (select id from social_accounts where workspace_id = (select id from workspaces where slug = 'default') and platform = $3 order by updated_at desc limit 1),
+           $1, $2, (select workspace_id from campaigns where id=$2),
+           (select id from social_accounts where project_id = $17::uuid and platform = $3 and enabled=true order by updated_at desc limit 1),
            $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
          )`,
         [post.id, campaign.id, post.platform, post.pillar, post.hook, post.body, post.cta, post.hashtags,
           post.mediaBrief ?? null, post.mediaType, post.mediaPlan, JSON.stringify(post.mediaItems),
-          post.mediaUrl ?? null, post.mediaKey ?? null, post.status, post.scheduledFor],
+          post.mediaUrl ?? null, post.mediaKey ?? null, post.status, post.scheduledFor, campaign.projectId],
       );
     }
     await client.query("commit");
@@ -73,12 +73,12 @@ export async function saveCampaign(campaign: Campaign, brief: Record<string, unk
   }
 }
 
-export async function getLatestCampaign(projectId: string): Promise<Campaign | null> {
+export async function getLatestCampaign(userId: string, projectId: string): Promise<Campaign | null> {
   const campaignResult = await getPool().query(
     `select id, project_id, name, thesis, audience from campaigns
-      where project_id = $1 and workspace_id = (select id from workspaces where slug = 'default')
+      where project_id = $1 and workspace_id = (select id from workspaces where owner_user_id = $2::uuid)
       order by created_at desc limit 1`,
-    [projectId],
+    [projectId, userId],
   );
   const row = campaignResult.rows[0];
   if (!row) return null;
@@ -121,32 +121,34 @@ export async function getLatestCampaign(projectId: string): Promise<Campaign | n
   };
 }
 
-export async function approvePost(postId: string) {
+export async function approvePost(userId: string, postId: string) {
   const result = await getPool().query(
     `update posts
         set status = 'approved'::post_status, failure_reason = null, updated_at = now()
       where id = $1 and status in ('draft', 'review')
+        and workspace_id=(select id from workspaces where owner_user_id=$2::uuid)
       returning status`,
-    [postId],
+    [postId, userId],
   );
   if (result.rows[0]) await audit(postId, "approved", {});
   return result.rows[0]?.status as string | undefined;
 }
 
-export async function updatePostContent(postId: string, content: { hook: string; body: string; cta: string; hashtags: string[] }) {
+export async function updatePostContent(userId: string, postId: string, content: { hook: string; body: string; cta: string; hashtags: string[] }) {
   const result = await getPool().query(
     `update posts
         set hook = $2, body = $3, cta = $4, hashtags = $5, updated_at = now()
       where id = $1 and status in ('draft', 'review', 'approved', 'scheduled', 'failed')
+        and workspace_id=(select id from workspaces where owner_user_id=$6::uuid)
       returning hook, body, cta, hashtags`,
-    [postId, content.hook, content.body, content.cta, content.hashtags],
+    [postId, content.hook, content.body, content.cta, content.hashtags, userId],
   );
   const row = result.rows[0];
   if (row) await audit(postId, "copy_updated", { hashtagCount: row.hashtags?.length ?? 0 });
   return row ? { hook: String(row.hook), body: String(row.body), cta: String(row.cta), hashtags: (row.hashtags ?? []) as string[] } : null;
 }
 
-export async function createPostVariant(postId: string, platform: Platform): Promise<Campaign["posts"][number] | null> {
+export async function createPostVariant(userId: string, postId: string, platform: Platform): Promise<Campaign["posts"][number] | null> {
   const result = await getPool().query(
     `insert into posts (
        campaign_id, workspace_id, social_account_id, platform, pillar, hook, body, cta, hashtags,
@@ -155,7 +157,8 @@ export async function createPostVariant(postId: string, platform: Platform): Pro
      select p.campaign_id, p.workspace_id,
             (select a.id from social_accounts a
               join integrations i on i.id = a.integration_id and i.status = 'active'
-             where a.workspace_id = p.workspace_id and a.platform = $2
+             where a.project_id = (select c.project_id from campaigns c where c.id=p.campaign_id)
+               and a.platform = $2 and a.enabled=true
              order by a.updated_at desc limit 1),
             $2::social_platform, p.pillar, p.hook, p.body, p.cta, p.hashtags,
             p.media_brief,
@@ -167,11 +170,11 @@ export async function createPostVariant(postId: string, platform: Platform): Pro
             'review'::post_status
        from posts p
       where p.id = $1
-        and p.workspace_id = (select id from workspaces where slug = 'default')
+        and p.workspace_id = (select id from workspaces where owner_user_id = $3::uuid)
         and p.status not in ('publishing')
       returning id, platform, pillar, hook, body, cta, hashtags, status, scheduled_for, media_brief,
                 media_type, media_plan, media_items, media_url, media_key, social_account_id`,
-    [postId, platform],
+    [postId, platform, userId],
   );
   const row = result.rows[0];
   if (!row) return null;
@@ -196,13 +199,14 @@ export async function createPostVariant(postId: string, platform: Platform): Pro
   };
 }
 
-export async function scheduleApprovedPost(postId: string, scheduledFor: Date, socialAccountId?: string) {
+export async function scheduleApprovedPost(userId: string, postId: string, scheduledFor: Date, socialAccountId?: string) {
   const result = await getPool().query(
     `update posts p
         set social_account_id = (
               select a.id from social_accounts a
                join integrations i on i.id = a.integration_id and i.status = 'active'
-               where a.workspace_id = p.workspace_id and a.platform = p.platform
+               where a.project_id = (select c.project_id from campaigns c where c.id=p.campaign_id)
+                 and a.platform = p.platform and a.enabled=true
                  and ($3::uuid is null or a.id = $3::uuid)
                order by a.updated_at desc limit 1
             ),
@@ -212,13 +216,15 @@ export async function scheduleApprovedPost(postId: string, scheduledFor: Date, s
             failure_reason = null,
             updated_at = now()
       where p.id = $1 and p.status in ('approved', 'scheduled', 'failed')
+        and p.workspace_id=(select id from workspaces where owner_user_id=$4::uuid)
         and exists (
           select 1 from social_accounts a join integrations i on i.id = a.integration_id and i.status = 'active'
-           where a.workspace_id = p.workspace_id and a.platform = p.platform
+           where a.project_id = (select c.project_id from campaigns c where c.id=p.campaign_id)
+             and a.platform = p.platform and a.enabled=true
              and ($3::uuid is null or a.id = $3::uuid)
         )
       returning p.status, p.scheduled_for`,
-    [postId, scheduledFor, socialAccountId ?? null],
+    [postId, scheduledFor, socialAccountId ?? null, userId],
   );
   const row = result.rows[0];
   if (row) await audit(postId, "scheduled", { scheduledFor: row.scheduled_for });
@@ -256,7 +262,7 @@ export type PostImageContext = {
   visualStyle: string | null;
 };
 
-export async function getPostImageContext(postId: string): Promise<PostImageContext | null> {
+export async function getPostImageContext(userId: string, postId: string): Promise<PostImageContext | null> {
   const result = await getPool().query(
     `select p.id as post_id, p.platform, p.pillar, p.hook, p.body, p.cta, p.media_brief,
             p.media_type, p.media_plan, p.media_items, p.media_key,
@@ -268,9 +274,9 @@ export async function getPostImageContext(postId: string): Promise<PostImageCont
        join campaigns c on c.id = p.campaign_id
        join projects pr on pr.id = c.project_id
       where p.id = $1
-        and p.workspace_id = (select id from workspaces where slug = 'default')
+        and p.workspace_id = (select id from workspaces where owner_user_id=$2::uuid)
         and p.status in ('draft', 'review', 'approved', 'scheduled')`,
-    [postId],
+    [postId, userId],
   );
   const row = result.rows[0];
   if (!row) return null;
@@ -306,18 +312,20 @@ export async function getPostImageContext(postId: string): Promise<PostImageCont
   };
 }
 
-export async function getRecentVisualStyles(projectId: string, excludePostId: string, limit = 8) {
+export async function getRecentVisualStyles(userId: string, projectId: string, excludePostId: string, limit = 8) {
   const result = await getPool().query(
     `select p.visual_style
        from posts p join campaigns c on c.id=p.campaign_id
-      where c.project_id=$1 and p.id<>$2 and p.visual_style is not null
-      order by p.updated_at desc limit $3`,
-    [projectId, excludePostId, limit],
+       join workspaces w on w.id=p.workspace_id
+      where c.project_id=$2 and p.id<>$3 and p.visual_style is not null and w.owner_user_id=$1::uuid
+      order by p.updated_at desc limit $4`,
+    [userId, projectId, excludePostId, limit],
   );
   return result.rows.map((row) => String(row.visual_style));
 }
 
 export async function setPostMedia(
+  userId: string,
   postId: string,
   media: { mediaUrl: string; mediaKey: string; mediaType: MediaType; mediaItems: MediaAsset[] },
   visual?: { styleId: string; direction: Record<string, unknown> },
@@ -326,71 +334,46 @@ export async function setPostMedia(
     `update posts set media_url = $2, media_key = $3, media_type = $4, media_items = $5,
         visual_style = coalesce($6, visual_style), visual_direction = coalesce($7, visual_direction), updated_at = now()
       where id = $1 and status in ('draft', 'review', 'approved', 'scheduled')
+        and workspace_id=(select id from workspaces where owner_user_id=$8::uuid)
       returning media_key`,
     [postId, media.mediaUrl, media.mediaKey, media.mediaType, JSON.stringify(media.mediaItems),
-      visual?.styleId ?? null, visual?.direction ?? null],
+      visual?.styleId ?? null, visual?.direction ?? null, userId],
   );
   return Boolean(result.rowCount);
 }
 
-export type AIUsageKind = "campaign" | "image";
+export type AIUsageKind = "campaign" | "image" | "profile";
 
-export async function reserveAIUsage(kind: AIUsageKind, limit: number) {
+function aiUsageColumn(kind: AIUsageKind) {
+  if (kind === "campaign") return "campaign_count";
+  if (kind === "image") return "image_count";
+  return "profile_count";
+}
+
+export async function reserveAIUsage(userId: string, kind: AIUsageKind, limit: number) {
   if (!Number.isInteger(limit) || limit < 1) return false;
-  const column = kind === "campaign" ? "campaign_count" : "image_count";
+  const column = aiUsageColumn(kind);
   const result = await getPool().query(
     `insert into ai_daily_usage (workspace_id, usage_date, ${column})
-     values ((select id from workspaces where slug = 'default'), (now() at time zone 'UTC')::date, 1)
+     values ((select id from workspaces where owner_user_id=$2::uuid), (now() at time zone 'UTC')::date, 1)
      on conflict (workspace_id, usage_date) do update
        set ${column} = ai_daily_usage.${column} + 1,
            updated_at = now()
        where ai_daily_usage.${column} < $1
      returning ${column}`,
-    [limit],
+    [limit, userId],
   );
   return Boolean(result.rowCount);
 }
 
-export async function releaseAIUsage(kind: AIUsageKind) {
-  const column = kind === "campaign" ? "campaign_count" : "image_count";
+export async function releaseAIUsage(userId: string, kind: AIUsageKind) {
+  const column = aiUsageColumn(kind);
   await getPool().query(
     `update ai_daily_usage set ${column} = greatest(${column} - 1, 0), updated_at = now()
-      where workspace_id = (select id from workspaces where slug = 'default')
+      where workspace_id = (select id from workspaces where owner_user_id=$1::uuid)
         and usage_date = (now() at time zone 'UTC')::date`,
+    [userId],
   );
-}
-
-export type TokenSet = {
-  accessToken: string;
-  refreshToken?: string;
-  expiresAt?: Date;
-  scopes: string[];
-  providerAccountId: string;
-  displayName?: string;
-  metadata?: Record<string, unknown>;
-};
-
-export async function saveSocialAccount(platform: Platform, tokenSet: TokenSet) {
-  const accessCiphertext = await encryptSecret(tokenSet.accessToken);
-  const refreshCiphertext = tokenSet.refreshToken ? await encryptSecret(tokenSet.refreshToken) : null;
-  const result = await getPool().query(
-    `insert into social_accounts (
-       workspace_id, platform, provider_account_id, display_name, access_token_ciphertext,
-       refresh_token_ciphertext, token_expires_at, scopes, metadata
-     ) values (
-       (select id from workspaces where slug = 'default'), $1, $2, $3, $4, $5, $6, $7, $8
-     ) on conflict (workspace_id, platform, provider_account_id) do update set
-       display_name = excluded.display_name,
-       access_token_ciphertext = excluded.access_token_ciphertext,
-       refresh_token_ciphertext = excluded.refresh_token_ciphertext,
-       token_expires_at = excluded.token_expires_at,
-       scopes = excluded.scopes,
-       metadata = excluded.metadata,
-       updated_at = now()
-     returning id`,
-    [platform, tokenSet.providerAccountId, tokenSet.displayName ?? null, accessCiphertext, refreshCiphertext, tokenSet.expiresAt ?? null, tokenSet.scopes, tokenSet.metadata ?? {}],
-  );
-  return result.rows[0].id as string;
 }
 
 export type DuePost = {
@@ -435,7 +418,7 @@ async function duePostFromRow(row: Record<string, unknown>): Promise<DuePost> {
   };
 }
 
-export async function claimPostNow(postId: string, socialAccountId?: string): Promise<DuePost | null> {
+export async function claimPostNow(userId: string, postId: string, socialAccountId?: string): Promise<DuePost | null> {
   const client = await getPool().connect();
   try {
     await client.query("begin");
@@ -444,7 +427,8 @@ export async function claimPostNow(postId: string, socialAccountId?: string): Pr
           set social_account_id = (
                 select a.id from social_accounts a
                  join integrations i on i.id = a.integration_id and i.status = 'active'
-                 where a.workspace_id = p.workspace_id and a.platform = p.platform
+                 where a.project_id = (select c.project_id from campaigns c where c.id=p.campaign_id)
+                   and a.platform = p.platform and a.enabled=true
                    and ($2::uuid is null or a.id = $2::uuid)
                  order by a.updated_at desc limit 1
               ),
@@ -455,13 +439,15 @@ export async function claimPostNow(postId: string, socialAccountId?: string): Pr
               failure_reason = null,
               updated_at = now()
         where p.id = $1 and p.status in ('approved', 'scheduled', 'failed')
+          and p.workspace_id=(select id from workspaces where owner_user_id=$3::uuid)
           and exists (
             select 1 from social_accounts a join integrations i on i.id = a.integration_id and i.status = 'active'
-             where a.workspace_id = p.workspace_id and a.platform = p.platform
+             where a.project_id = (select c.project_id from campaigns c where c.id=p.campaign_id)
+               and a.platform = p.platform and a.enabled=true
                and ($2::uuid is null or a.id = $2::uuid)
           )
         returning p.id`,
-      [postId, socialAccountId ?? null],
+      [postId, socialAccountId ?? null, userId],
     );
     if (!claimed.rowCount) { await client.query("rollback"); return null; }
     const result = await client.query(
@@ -489,7 +475,9 @@ export async function claimDuePosts(limit = 10): Promise<DuePost[]> {
               a.integration_id, a.access_token_ciphertext, a.token_expires_at,
               a.id as social_account_id, a.provider_account_id, a.display_name, a.scopes, a.metadata
          from posts p
-         join social_accounts a on a.id = p.social_account_id
+         join social_accounts a on a.id = p.social_account_id and a.enabled=true
+         join campaigns c on c.id = p.campaign_id and c.project_id = a.project_id
+         join integrations i on i.id = a.integration_id and i.status = 'active'
         where p.status = 'scheduled' and p.scheduled_for <= now()
         order by p.scheduled_for asc
         for update of p skip locked

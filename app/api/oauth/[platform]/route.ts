@@ -5,6 +5,7 @@ import { createOAuthSession } from "@/lib/integrations/repository";
 import { callbackUrl, getProviderCredentials, isProvider, providerConfig } from "@/lib/integrations/providers";
 import { canonicalOAuthStartUrl } from "@/lib/integrations/oauth-origin";
 import { createClient } from "@/lib/supabase/server";
+import { getProject } from "@/lib/projects";
 
 export const runtime = "nodejs";
 
@@ -27,6 +28,11 @@ export async function GET(request: Request, context: { params: Promise<{ platfor
   try {
     const config = providerConfig[value];
     const requestUrl = new URL(request.url);
+    const projectId = requestUrl.searchParams.get("project");
+    const userId = typeof authData.claims.sub === "string" ? authData.claims.sub : undefined;
+    if (!userId || !projectId || !await getProject(userId, projectId)) {
+      throw new Error("Choose a valid project before connecting a social account.");
+    }
     const scopes = value === "linkedin" && requestUrl.searchParams.get("mode") === "organization"
       ? [...config.scopes, "rw_organization_admin", "w_organization_social"]
       : config.scopes;
@@ -35,7 +41,8 @@ export async function GET(request: Request, context: { params: Promise<{ platfor
     const state = createState();
     const binding = createState();
     const pkce = config.usesPkce ? await createPkce() : undefined;
-    await createOAuthSession({ provider: value, state, binding, pkceVerifier: pkce?.verifier });
+    const returnTo = `/dashboard?project=${encodeURIComponent(projectId)}&view=connections`;
+    await createOAuthSession({ userId, projectId, provider: value, state, binding, pkceVerifier: pkce?.verifier, returnTo });
 
     const cookieStore = await cookies();
     const secure = process.env.NODE_ENV === "production";
@@ -66,6 +73,8 @@ export async function GET(request: Request, context: { params: Promise<{ platfor
     target.searchParams.set("view", "connections");
     target.searchParams.set("integration_error", "not_configured");
     target.searchParams.set("provider", value);
+    const projectId = new URL(request.url).searchParams.get("project");
+    if (projectId) target.searchParams.set("project", projectId);
     return NextResponse.redirect(target);
   }
 }

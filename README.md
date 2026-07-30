@@ -1,4 +1,4 @@
-# BuildToReach
+# ProReach
 
 An approval-first marketing agent for indie builders. Connect Facebook Pages, Instagram professional accounts, Threads, X, and LinkedIn; then plan, approve, and publish from one place.
 
@@ -13,9 +13,9 @@ An approval-first marketing agent for indie builders. Connect Facebook Pages, In
 - Verifies connections, refreshes X/Threads/eligible LinkedIn tokens, and supports disconnect/revocation.
 - Publishes due posts through a protected scheduler endpoint.
 - Records publishing success/failure and remote post IDs.
-- Starts with a real project onboarding flow and never seeds example campaigns, posts, metrics, or product claims.
+- Starts with a real project onboarding flow that can prefill editable product context from a public website and never seeds example campaigns, posts, metrics, or product claims.
 - Stores reusable product context: product truth, audience, pain points, positioning, proof, voice, goals, and claim guardrails.
-- Lets you switch projects from the dashboard and keeps every campaign scoped to the selected project.
+- Gives every Google user a private workspace and keeps projects, campaigns, OAuth grants, social accounts, and publishing destinations scoped to the selected project.
 
 ## Local setup
 
@@ -38,7 +38,7 @@ openssl rand -hex 32     # CRON_SECRET
 
 Open [http://localhost:3000](http://localhost:3000) for the landing page or [http://localhost:3000/dashboard](http://localhost:3000/dashboard) for the authenticated workspace.
 
-For a production deployment, create the PostgreSQL schema in `db/schema.sql`, set all environment variables, and register these exact OAuth callbacks with each provider. Existing installations should run every migration through `db/migrations/0009_direct_instagram.sql`:
+For a production deployment, create the PostgreSQL schema in `db/schema.sql`, set all environment variables, and register these exact OAuth callbacks with each provider. Existing installations should run every migration through `db/migrations/0012_website_profile_usage.sql`:
 
 ```text
 http://localhost:3000/api/oauth/meta/callback
@@ -64,7 +64,7 @@ Open `/setup/integrations` for provider-by-provider environment variables, scope
 6. Review a draft and approve it. Approval alone never sends the post.
 7. Choose **Post now** to publish immediately, **Schedule** to add it to the protected publishing queue, or keep it approved for later.
 
-There is intentionally no demo-data fallback. PostgreSQL and Cloudflare Workers AI are required for campaign writing and premium background generation; R2 stores the finished branded social cards. Exact text and brand elements are rendered by the application rather than entrusted to the image model. If the image model is unavailable, BuildToReach falls back to its deterministic renderer. Provider connections remain workspace-wide, while campaigns and posts are scoped to a project. Application-level daily limits provide a second guardrail in addition to Cloudflare's free-plan limit.
+There is intentionally no demo-data fallback. PostgreSQL and Cloudflare Workers AI are required for campaign writing and premium background generation; R2 stores the finished branded social cards. Exact text and brand elements are rendered by the application rather than entrusted to the image model. If the image model is unavailable, ProReach falls back to its deterministic renderer. Provider grants, discovered accounts, campaigns, and posts are project-scoped inside the authenticated user's private workspace. Application-level daily limits provide a second guardrail in addition to Cloudflare's free-plan limit.
 
 ## Scheduling
 
@@ -96,7 +96,7 @@ Supabase Auth verifies the Google session before serving the dashboard and refre
 - **Instagram:** uses Business Login for Instagram with `instagram_business_basic` and `instagram_business_content_publish`. It connects a professional account directly and does not require a linked Facebook Page. Public access still requires the appropriate Meta review/Advanced Access; development-mode access is restricted to app roles/testers.
 - **Threads:** create a Meta Threads app and request `threads_basic` and `threads_content_publish`.
 - **X:** enable OAuth 2.0 Authorization Code with PKCE and request `tweet.read`, `tweet.write`, `users.read`, and `offline.access`. API requests are usage-billed.
-- **LinkedIn:** company Page publishing requires Community Management API access for a registered legal organization. BuildToReach's LinkedIn Connect action requests `openid`, `profile`, `w_member_social`, `rw_organization_admin`, and `w_organization_social`, discovers administered Pages, and requires an explicit destination choice when both a Page and personal profile are available.
+- **LinkedIn:** company Page publishing requires Community Management API access for a registered legal organization. ProReach's LinkedIn Connect action requests `openid`, `profile`, `w_member_social`, `rw_organization_admin`, and `w_organization_social`, discovers administered Pages, and requires an explicit destination choice when both a Page and personal profile are available.
 
 Run the provider contract tests with `npm test`. They mock the external exchanges and assert X PKCE, Threads long-lived exchange, Meta Page/Instagram discovery, and LinkedIn OIDC identity handling. A real end-to-end OAuth test still requires your own developer-app credentials because callback URLs and app roles are provider-owned configuration.
 
@@ -106,9 +106,10 @@ Run the provider contract tests with `npm test`. They mock the external exchange
 - LinkedIn and Meta posts support generated images; X and Threads remain text-only in this first release.
 - Native video upload remains a follow-up milestone.
 - Analytics collection is schema-ready but not enabled until provider read permissions and cost limits are configured.
-- This remains a single-workspace foundation. Google authentication is enabled, but user-to-workspace membership and tenant isolation must be added before offering it as a multi-tenant SaaS.
-- Until membership is implemented, restrict the Google OAuth app to trusted test users or an Internal Google Workspace audience; OAuth grants and projects still bind to the single `default` workspace.
+- Project-count pricing and subscription enforcement are not enabled yet; the ownership model supports adding those limits without changing how projects or integrations are stored.
 
 See [docs/30-day-growth-plan.md](docs/30-day-growth-plan.md) for the operating strategy and [docs/architecture.md](docs/architecture.md) for the implementation map.
+See [docs/proreach-brand.md](docs/proreach-brand.md) for the canonical ProReach identity and the boundary between the platform and customer projects.
 See [docs/creative-system.md](docs/creative-system.md) for the product-ad archetypes, no-real-human policy, and media rendering pipeline.
 See [docs/supabase-google-auth.md](docs/supabase-google-auth.md) for Supabase database, Google OAuth, and Vercel environment configuration.
+See [docs/social-oauth-setup.md](docs/social-oauth-setup.md) for project-scoped Facebook, Instagram, Threads, X, and LinkedIn OAuth configuration.

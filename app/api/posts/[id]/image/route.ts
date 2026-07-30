@@ -17,6 +17,7 @@ import { renderMotionClip } from "@/lib/media/motion";
 import { deleteGeneratedImage, downloadStoredImage, uploadGeneratedAsset } from "@/lib/media/r2";
 import { renderSocialCard } from "@/lib/media/social-card";
 import { mediaTypes, type MediaAsset, type MediaFrame, type MediaType } from "@/lib/types";
+import { requireAuthenticatedUser } from "@/lib/auth/user";
 
 export const runtime = "nodejs";
 
@@ -42,11 +43,14 @@ function defaultFrames(mediaType: MediaType, pillar: PostImageContext["pillar"],
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   let reserved = false;
+  let userId: string | undefined;
   const uploaded: MediaAsset[] = [];
   try {
     if (!hasDatabase()) return NextResponse.json({ error: "DATABASE_URL is required for image generation." }, { status: 503 });
+    const user = await requireAuthenticatedUser();
+    userId = user.id;
     const { id } = ParamsSchema.parse(await context.params);
-    const post = await getPostImageContext(id);
+    const post = await getPostImageContext(user.id, id);
     if (!post) return NextResponse.json({ error: "This post was not found or can no longer be changed." }, { status: 404 });
     const rawBody = await request.text();
     const override = rawBody ? BodySchema.parse(JSON.parse(rawBody)) : {};
@@ -62,7 +66,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       }
     }
 
-    const recentStyles = [...(post.visualStyle ? [post.visualStyle] : []), ...await getRecentVisualStyles(post.projectId, post.postId)];
+    const recentStyles = [...(post.visualStyle ? [post.visualStyle] : []), ...await getRecentVisualStyles(user.id, post.projectId, post.postId)];
     const direction = await createCreativeDirection(post, recentStyles);
     let provider = "buildtoreach-renderer";
     let visual: { styleId: string; direction: Record<string, unknown> } = { styleId: direction.styleId, direction };
@@ -90,7 +94,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       visual = { styleId: direction.styleId, direction: { ...direction, frames, durationSeconds: post.mediaPlan.durationSeconds } };
     } else {
 
-      reserved = await reserveAIUsage("image", dailyAILimit("image"));
+      reserved = await reserveAIUsage(user.id, "image", dailyAILimit("image"));
       if (!reserved) return NextResponse.json({ error: "The daily free image limit has been reached. Try again after 05:30 AM IST." }, { status: 429 });
 
       let background: Buffer | undefined;
@@ -121,7 +125,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
 
     const primary = uploaded[0];
     if (!primary) throw new Error("No media asset was rendered.");
-    const updated = await setPostMedia(post.postId, {
+    const updated = await setPostMedia(user.id, post.postId, {
       mediaUrl: primary.url, mediaKey: primary.key, mediaType, mediaItems: uploaded,
     }, visual);
     if (!updated) throw new Error("The post changed while its media was being generated.");
@@ -133,7 +137,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     return NextResponse.json({ postId: post.postId, mediaType, mediaUrl: primary.url, mediaItems: uploaded, provider, creativeDirection: visual?.direction, warning });
   } catch (error) {
     await Promise.all(uploaded.map((asset) => deleteGeneratedImage(asset.key).catch(() => undefined)));
-    if (reserved) await releaseAIUsage("image").catch(() => undefined);
+    if (reserved && userId) await releaseAIUsage(userId, "image").catch(() => undefined);
     if (error instanceof z.ZodError) return NextResponse.json({ error: "Invalid post identifier." }, { status: 400 });
     console.error("Post image generation failed", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json({ error: "Media rendering failed. Check the R2 configuration and try again." }, { status: 500 });
