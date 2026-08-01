@@ -1,5 +1,6 @@
 import type { IntegrationProvider } from "@/lib/types";
 import type { AuthorizationResult, OAuthToken } from "@/lib/integrations/types";
+import { appUrl } from "@/lib/app-origin";
 
 export type ProviderConfig = {
   authorizeUrl: string;
@@ -62,8 +63,7 @@ export function isProvider(value: string): value is IntegrationProvider {
 }
 
 export function callbackUrl(provider: IntegrationProvider) {
-  const appUrl = new URL(process.env.APP_URL ?? "http://localhost:3000");
-  return new URL(`/api/oauth/${provider}/callback`, appUrl).toString();
+  return appUrl(`/api/oauth/${provider}/callback`).toString();
 }
 
 export function getProviderCredentials(provider: IntegrationProvider) {

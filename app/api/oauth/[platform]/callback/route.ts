@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { completeAuthorization, isProvider } from "@/lib/integrations/providers";
 import { consumeOAuthSession, saveAuthorization } from "@/lib/integrations/repository";
+import { appUrl } from "@/lib/app-origin";
 
 export const runtime = "nodejs";
 
@@ -40,7 +41,7 @@ export async function GET(request: Request, context: { params: Promise<{ platfor
 }
 
 function redirectToConnections(input: { provider: string; projectId?: string; outcome: "connected" | "cancelled" | "failed"; accounts?: number; selectIntegration?: string }) {
-  const target = new URL("/dashboard", process.env.APP_URL ?? "http://localhost:3000");
+  const target = appUrl("/dashboard");
   target.searchParams.set("view", "connections");
   target.searchParams.set("integration", input.outcome);
   target.searchParams.set("provider", input.provider);

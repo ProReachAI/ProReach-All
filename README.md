@@ -22,10 +22,16 @@ An approval-first marketing agent for indie builders. Connect Facebook Pages, In
 ```bash
 cp .env.example .env.local
 npm install
-docker compose up -d
-psql "postgresql://postgres:postgres@localhost:5432/marketing_agent" -f db/schema.sql
 npm run dev
 ```
+
+Local application routes are always generated from `http://localhost:3000`. Set both `APP_URL` and `NEXT_PUBLIC_SITE_URL` to that origin in `.env.local`. The database is independent of the browser origin:
+
+- If PostgreSQL is running locally, set `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/marketing_agent` and run `db/schema.sql`.
+- If PostgreSQL is not running locally, set `DATABASE_URL` to the Supabase pooler URL. The local UI and callbacks still remain on localhost.
+- Production always uses the Supabase `DATABASE_URL` stored in Vercel and generates routes from `https://www.proreach.in`.
+
+`npm run dev` validates this separation before starting and refuses mixed local/production application URLs or a Supabase URL that belongs to a different project.
 
 The public landing page is available at `/`; Google sign-in is required before `/dashboard` loads. Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in `.env.local`, enable Google in Supabase Auth, and allow `http://localhost:3000/auth/callback`. See [the Supabase, Google Auth, and Vercel guide](docs/supabase-google-auth.md) for the complete production setup.
 
@@ -38,7 +44,7 @@ openssl rand -hex 32     # CRON_SECRET
 
 Open [http://localhost:3000](http://localhost:3000) for the landing page or [http://localhost:3000/dashboard](http://localhost:3000/dashboard) for the authenticated workspace.
 
-For a production deployment, create the PostgreSQL schema in `db/schema.sql`, set all environment variables, and register these exact OAuth callbacks with each provider. Existing installations should run every migration through `db/migrations/0012_website_profile_usage.sql`:
+Local development generates these callback routes. A provider must explicitly allow a localhost callback before it can be connected locally:
 
 ```text
 http://localhost:3000/api/oauth/meta/callback
@@ -48,9 +54,13 @@ http://localhost:3000/api/oauth/threads/callback
 http://localhost:3000/api/oauth/linkedin/callback
 ```
 
-Replace `http://localhost:3000` with the deployed `APP_URL` in production.
+Production provider callbacks use the equivalent `https://www.proreach.in/api/oauth/.../callback` URLs documented in [the social OAuth setup guide](docs/social-oauth-setup.md).
 
-Business Login for Instagram requires a publicly reachable HTTPS redirect URL. For local testing, expose port 3000 through an HTTPS tunnel, set `APP_URL` to that tunnel origin, register `${APP_URL}/api/oauth/instagram/callback` in Meta, restart Next.js, and open the application through the same HTTPS origin so the OAuth binding cookie returns to the correct host.
+For a production deployment, create the PostgreSQL schema in `db/schema.sql`, set all Vercel Production environment variables, and register the production callbacks. Existing installations should run every migration through `db/migrations/0012_website_profile_usage.sql`.
+
+Vercel environment variables live in the Vercel project and persist across Git deployments; ignored files such as `.env.local` and `.env.vercel` are never uploaded by a push. Import the production values once, then every push is checked by the production environment validator before Next.js builds.
+
+Business Login for Instagram requires a publicly reachable HTTPS redirect URL, so test that provider connection from the production deployment. Local development intentionally stays on localhost.
 
 Open `/setup/integrations` for provider-by-provider environment variables, scopes, portals, and exact callback URLs. If the database already uses the original MVP schema, run the SQL files in `db/migrations` in numeric order instead of recreating it.
 

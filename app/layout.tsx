@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import { appOrigin } from "@/lib/app-origin";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://proreach.in"),
+  metadataBase: new URL(appOrigin()),
   title: {
     default: "ProReach — Approval-first AI marketing agent",
     template: "%s | ProReach",

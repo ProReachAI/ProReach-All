@@ -5,7 +5,7 @@ import { ProReachLogo } from "@/components/proreach-logo";
 export const metadata: Metadata = {
   title: "Privacy Policy",
   description: "How ProReach handles account, product, campaign, and connected-platform information.",
-  alternates: { canonical: "https://proreach.in/privacy" },
+  alternates: { canonical: "/privacy" },
 };
 
 export default function PrivacyPage() {
@@ -38,12 +38,12 @@ export default function PrivacyPage() {
         <p>Information is retained as needed to provide the service, meet legal obligations, resolve disputes, and protect the service. We use reasonable technical and organizational safeguards, but no internet service can guarantee absolute security.</p>
 
         <h2>Your choices</h2>
-        <p>You may disconnect integrations, revoke provider access, sign out, and request access to or deletion of account-related information through the support channel associated with the service.</p>
+        <p>You may disconnect integrations, revoke provider access, sign out, and request access to or deletion of account-related information by following our <Link href="/data-deletion">User Data Deletion instructions</Link>.</p>
 
         <h2>Changes</h2>
         <p>We may update this policy as ProReach evolves. Material changes will be reflected by an updated date on this page.</p>
       </article>
-      <footer><Link href="/">Back to ProReach</Link><Link href="/terms">Terms of Service</Link></footer>
+      <footer><Link href="/">Back to ProReach</Link><Link href="/terms">Terms of Service</Link><Link href="/data-deletion">Data Deletion</Link></footer>
     </main>
   );
 }

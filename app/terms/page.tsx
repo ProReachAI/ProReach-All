@@ -5,7 +5,7 @@ import { ProReachLogo } from "@/components/proreach-logo";
 export const metadata: Metadata = {
   title: "Terms of Service",
   description: "Terms for using the ProReach marketing workspace.",
-  alternates: { canonical: "https://proreach.in/terms" },
+  alternates: { canonical: "/terms" },
 };
 
 export default function TermsPage() {
@@ -42,7 +42,7 @@ export default function TermsPage() {
         <h2>Changes</h2>
         <p>These terms may be updated as the service evolves. Continued use after an update means you accept the revised terms.</p>
       </article>
-      <footer><Link href="/">Back to ProReach</Link><Link href="/privacy">Privacy Policy</Link></footer>
+      <footer><Link href="/">Back to ProReach</Link><Link href="/privacy">Privacy Policy</Link><Link href="/data-deletion">Data Deletion</Link></footer>
     </main>
   );
 }

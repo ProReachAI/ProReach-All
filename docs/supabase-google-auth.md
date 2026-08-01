@@ -5,7 +5,7 @@ ProReach uses Supabase Auth for Google sign-in and connects to the same Supabase
 There are two different callback URLs in this flow:
 
 1. Google redirects to Supabase: `https://<project-ref>.supabase.co/auth/v1/callback`
-2. Supabase redirects to ProReach: `https://proreach.in/auth/callback`
+2. Supabase redirects to ProReach: `https://www.proreach.in/auth/callback`
 
 Do not enter the ProReach callback URL in Google's **Authorized redirect URIs** field.
 
@@ -43,9 +43,9 @@ The publishable key is designed for browser use. Do not add a service-role or se
 
 Open **Authentication → URL Configuration**:
 
-- **Site URL:** `https://proreach.in`
+- **Site URL:** `https://www.proreach.in`
 - **Redirect URLs:**
-  - `https://proreach.in/auth/callback`
+  - `https://www.proreach.in/auth/callback`
   - `http://localhost:3000/auth/callback`
 
 For Vercel previews, either add each stable preview callback explicitly or add the Supabase-documented team wildcard:
@@ -59,12 +59,12 @@ Use exact production URLs instead of a wildcard for `proreach.in`.
 ## 4. Create the Google OAuth client
 
 1. Open [Google Auth Platform](https://console.cloud.google.com/auth/overview) and select or create a Google Cloud project.
-2. Complete **Branding** with the app name `ProReach`, support email, homepage `https://proreach.in`, privacy-policy URL, terms URL, and authorized domain `proreach.in` as applicable.
+2. Complete **Branding** with the app name `ProReach`, support email, homepage `https://www.proreach.in`, privacy-policy URL, terms URL, and authorized domain `proreach.in` as applicable.
 3. In **Audience**, select Internal only if every user belongs to the same Google Workspace organization. Otherwise select External. While the app is in testing, add the Google accounts that must be able to sign in as test users.
 4. Open **Clients → Create client**.
 5. Choose **Web application** and name it `ProReach Web`.
 6. Add these **Authorized JavaScript origins**:
-   - `https://proreach.in`
+   - `https://www.proreach.in`
    - `http://localhost:3000` for local development
 7. In Supabase, open **Authentication → Providers → Google** and copy the callback URL shown there. It has this form:
 
@@ -88,11 +88,13 @@ If the Google consent screen remains in Testing mode, only configured test users
 
 ## 6. Configure Vercel environment variables
 
+Application origin and database location are separate. In `.env.local`, keep `APP_URL` and `NEXT_PUBLIC_SITE_URL` on `http://localhost:3000`; `DATABASE_URL` may point to local PostgreSQL or the matching Supabase pooler. In Vercel Production, both application URLs must be `https://www.proreach.in` and `DATABASE_URL` must always point to Supabase. The local startup and production build validators reject mixed origins.
+
 Open the Vercel project, then **Settings → Environment Variables**. Add these to Production; add them to Preview and Development too if those deployments should work:
 
 ```text
-APP_URL=https://proreach.in
-NEXT_PUBLIC_SITE_URL=https://proreach.in
+APP_URL=https://www.proreach.in
+NEXT_PUBLIC_SITE_URL=https://www.proreach.in
 NEXT_PUBLIC_SUPABASE_URL=https://<project-ref>.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
 DATABASE_URL=<Supabase transaction pooler connection string>
@@ -102,11 +104,13 @@ CRON_SECRET=<long random secret>
 
 Keep the existing Cloudflare, R2, and social-provider variables required by the rest of ProReach. `DATABASE_URL`, `TOKEN_ENCRYPTION_KEY`, `CRON_SECRET`, OAuth client secrets, and storage secrets must remain server-only.
 
-After adding or changing Vercel variables, trigger a new production deployment; previous deployments do not receive updated values.
+The local `.env.vercel` file is intentionally ignored by Git and is only an import source. A push never uploads that file or any secret. Import its values into **Vercel → Project Settings → Environment Variables → Production** once; Vercel then keeps them for every production deployment triggered by later pushes.
+
+After adding or changing Vercel variables, trigger a new production deployment; previous deployments do not receive updated values. Production builds run `scripts/verify-production-env.mjs` before Next.js and fail with missing variable names when the deployment points to localhost, an ngrok tunnel, mismatched Supabase projects, a local database, the non-canonical production host, or lacks a required production service. Secret values are never printed.
 
 ## 7. Verify the complete flow
 
-1. Open a private/incognito window at `https://proreach.in`.
+1. Open a private/incognito window at `https://www.proreach.in`.
 2. Confirm that the public landing page appears at `/` and that `/dashboard` redirects to Google sign-in when signed out.
 3. Select an allowed Google account.
 4. Confirm that the browser visits `/auth/callback` briefly and then loads `/`.

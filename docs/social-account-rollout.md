@@ -18,7 +18,7 @@ Complete this once before creating platform accounts:
 3. Store every unique password, passkey, recovery code, owner, and recovery method in a password manager. Never store these in this repository.
 4. Enable 2FA immediately after each account is verified. Prefer a passkey or authenticator app over SMS when available.
 5. Add a second trusted administrator through the platform's role/permission system when supported. Do not share passwords.
-6. Prepare one profile kit: the ProReach square logo, horizontal banner, workspace screenshot, founder photo, 80/160/300-character bios, `https://proreach.in`, one-line tagline, company category, founding year, location, and support email.
+6. Prepare one profile kit: the ProReach square logo, horizontal banner, workspace screenshot, founder photo, 80/160/300-character bios, `https://www.proreach.in`, one-line tagline, company category, founding year, location, and support email.
 
 ## Brand boundary
 

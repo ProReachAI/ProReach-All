@@ -31,17 +31,17 @@ A second Google user receives a separate workspace. Switching the active project
 Register these exact HTTPS callbacks. They are not the Supabase/Google callback.
 
 ```text
-https://proreach.in/api/oauth/meta/callback
-https://proreach.in/api/oauth/instagram/callback
-https://proreach.in/api/oauth/threads/callback
-https://proreach.in/api/oauth/x/callback
-https://proreach.in/api/oauth/linkedin/callback
+https://www.proreach.in/api/oauth/meta/callback
+https://www.proreach.in/api/oauth/instagram/callback
+https://www.proreach.in/api/oauth/threads/callback
+https://www.proreach.in/api/oauth/x/callback
+https://www.proreach.in/api/oauth/linkedin/callback
 ```
 
 ## Core server variables
 
 ```dotenv
-APP_URL=https://proreach.in
+APP_URL=https://www.proreach.in
 TOKEN_ENCRYPTION_KEY=<32-byte base64 value>
 DATABASE_URL=<Supabase transaction pooler URL with percent-encoded password>
 ```
@@ -69,7 +69,7 @@ For Vercel, copy the Supabase **Transaction pooler** string on port `6543`. Perc
    META_GRAPH_VERSION=v25.0
    ```
 
-5. Add `https://proreach.in/api/oauth/meta/callback` to **Valid OAuth Redirect URIs**.
+5. Add `https://www.proreach.in/api/oauth/meta/callback` to **Valid OAuth Redirect URIs**.
 6. The app requests `pages_show_list`, `pages_read_engagement`, and `pages_manage_posts`.
 7. In development mode, only app administrators, developers, and testers can authorize. Before public customers connect Pages, complete the applicable business verification, App Review, and Advanced Access requirements.
 
@@ -86,7 +86,7 @@ After authorization, ProReach discovers manageable Pages and asks the user which
    INSTAGRAM_APP_SECRET=<Instagram App secret>
    ```
 
-4. Add `https://proreach.in/api/oauth/instagram/callback` to the Instagram OAuth redirect list.
+4. Add `https://www.proreach.in/api/oauth/instagram/callback` to the Instagram OAuth redirect list.
 5. Add/accept the required Instagram tester during development.
 6. The connected Instagram account must be Professional (Business or Creator), not a consumer/personal account.
 7. The app requests `instagram_business_basic` and `instagram_business_content_publish`.
@@ -104,7 +104,7 @@ This is the direct Instagram Login flow and does not require the account to be l
    THREADS_CLIENT_SECRET=<Threads App secret>
    ```
 
-4. Register `https://proreach.in/api/oauth/threads/callback` in the Threads redirect URL list.
+4. Register `https://www.proreach.in/api/oauth/threads/callback` in the Threads redirect URL list.
 5. Add the Threads profile as a tester and accept the invitation while the app is in development.
 6. The app requests `threads_basic` and `threads_content_publish`. Complete Meta review before allowing people outside app roles/testers.
 
@@ -115,8 +115,8 @@ Meta maintains the official Threads API collection here: <https://www.postman.co
 1. Open <https://console.x.com/> and create/select the developer project and app.
 2. In user authentication settings, enable **OAuth 2.0**.
 3. Choose **Web App** (a confidential client) and enable read/write capability.
-4. Set website URL to `https://proreach.in`.
-5. Set the exact callback to `https://proreach.in/api/oauth/x/callback`.
+4. Set website URL to `https://www.proreach.in`.
+5. Set the exact callback to `https://www.proreach.in/api/oauth/x/callback`.
 6. In **Keys and tokens**, copy the OAuth 2.0 **Client ID** and generate/copy its **Client Secret**.
 7. Set:
 
@@ -131,7 +131,7 @@ ProReach uses Authorization Code + PKCE and requests `tweet.read`, `tweet.write`
 
 1. Open <https://www.linkedin.com/developers/apps> and create an app associated with the ProReach LinkedIn Page/legal organization.
 2. Open the app's **Auth** tab. Copy **Client ID** and **Primary Client Secret**.
-3. Add `https://proreach.in/api/oauth/linkedin/callback` under **Authorized redirect URLs for your app**.
+3. Add `https://www.proreach.in/api/oauth/linkedin/callback` under **Authorized redirect URLs for your app**.
 4. Set:
 
    ```dotenv

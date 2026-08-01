@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "predev": "node --env-file-if-exists=.env.local scripts/verify-development-env.mjs",
+    "dev": "next dev --port 3000",
+    "prebuild": "node scripts/verify-production-env.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",

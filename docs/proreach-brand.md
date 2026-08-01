@@ -3,7 +3,7 @@
 ## Canonical identity
 
 - **Brand and product name:** ProReach
-- **Website:** https://proreach.in
+- **Website:** https://www.proreach.in
 - **Category:** Approval-first AI marketing workspace
 - **Primary audience:** Founders, indie builders, lean marketing teams, and product marketers
 - **Core promise:** Turn product truth into coordinated, channel-native social campaigns while keeping people in control of approval and publishing.
@@ -35,7 +35,7 @@ Prophrase is a customer/project, not another name for ProReach. Its fixtures may
 - Preferred social handle to attempt: **@ProReachHQ**
 - Fallback handles: **@GetProReach**, then **@UseProReach**
 - `@ProReach` is already owned by an unrelated X user.
-- Central website link: `https://proreach.in`
+- Central website link: `https://www.proreach.in`
 - Central accounts publish ProReach product education, founder insights, campaign teardowns, release notes, approved proof, and company updates.
 - Customer content appears centrally only with permission as a case study, testimonial, or clearly labeled example.
 - Every customer connects its own provider account to its own ProReach project. Do not reuse central ProReach credentials for a customer project.

@@ -387,7 +387,7 @@ export function LandingPage() {
         </div>
         <div><strong>Product</strong><a href="#product">Capabilities</a><a href="#workflow">Workflow</a><a href="#control">Approval model</a></div>
         <div><strong>Access</strong><a href="/login">Sign in</a><a href="/login">Open workspace</a></div>
-        <div><strong>Legal</strong><a href="/privacy">Privacy</a><a href="/terms">Terms</a></div>
+        <div><strong>Legal</strong><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/data-deletion">Data deletion</a></div>
         <p className="lp-footer-bottom">© {new Date().getFullYear()} ProReach. Built for thoughtful growth.</p>
       </footer>
     </main>

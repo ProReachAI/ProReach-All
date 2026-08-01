@@ -66,20 +66,26 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   const outcome = typeof params.integration === "string" ? params.integration : undefined;
   const integrationError = typeof params.integration_error === "string" ? params.integration_error : undefined;
   const accounts = typeof params.accounts === "string" ? Number(params.accounts) : undefined;
-  const needsDestinationSelection = typeof params.select_integration === "string";
+  const requestedSelectionId = typeof params.select_integration === "string" ? params.select_integration : undefined;
+  const selectionConnection = connections.find((connection) => connection.id === requestedSelectionId);
+  const needsDestinationSelection = Boolean(selectionConnection?.accounts.length);
+  const selectionHasNoDestinations = Boolean(requestedSelectionId && !needsDestinationSelection);
   const providerIsAlreadyConnected = connections.some((connection) => connection.provider === provider && connection.connected);
+  const providerName = provider === "meta" ? "Facebook" : provider;
   const message = dataError ?? (outcome === "connected"
     ? needsDestinationSelection
-      ? `${provider === "meta" ? "Meta" : provider} connected successfully. Choose the Pages or profiles ProReach may publish to.`
-      : `${provider === "meta" ? "Meta" : provider} connected successfully${Number.isFinite(accounts) ? ` · ${accounts} publishing account${accounts === 1 ? "" : "s"} found` : ""}.`
+      ? `${providerName} connected successfully. Choose the Pages or profiles ProReach may publish to.`
+      : selectionHasNoDestinations || accounts === 0
+        ? `${providerName} sign-in succeeded, but no eligible publishing destinations were returned. Confirm that this account manages a Page or professional profile, then reconnect.`
+        : `${providerName} connected successfully${Number.isFinite(accounts) ? ` · ${accounts} publishing account${accounts === 1 ? "" : "s"} found` : ""}.`
     : outcome === "cancelled"
       ? "Authorization was cancelled. Nothing was connected."
       : outcome === "failed"
         ? providerIsAlreadyConnected
           ? undefined
-          : `Could not connect ${provider}. Check its callback URL, app permissions, and server logs.`
+          : `Could not connect ${providerName}. Check its callback URL, app permissions, and server logs.`
         : integrationError === "not_configured"
-          ? `${provider === "meta" ? "Meta" : provider} credentials are not configured yet.`
+          ? `${providerName} OAuth is not enabled in this ProReach deployment yet.`
           : undefined);
   return (
     <Dashboard
@@ -90,7 +96,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       connections={connections}
       initialView={params.view === "connections" ? "connections" : "overview"}
       initialNotice={message}
-      initialSelectionId={typeof params.select_integration === "string" ? params.select_integration : undefined}
+      initialSelectionId={needsDestinationSelection ? requestedSelectionId : undefined}
       authUser={{ name, email, initials }}
     />
   );
