@@ -58,6 +58,23 @@ export const providerConfig: Record<IntegrationProvider, ProviderConfig> = {
   },
 };
 
+const linkedInOrganizationScopes = ["rw_organization_admin", "w_organization_social"];
+
+/**
+ * LinkedIn rejects the complete authorization request when it contains scopes
+ * that have not been provisioned for the developer app. Personal profile
+ * publishing is self-service, while company Page publishing requires approved
+ * Community Management API access. Keep the restricted scopes opt-in so a
+ * normal production connection can always reach LinkedIn's consent screen.
+ */
+export function authorizationScopes(provider: IntegrationProvider) {
+  const scopes = providerConfig[provider].scopes;
+  if (provider !== "linkedin" || process.env.LINKEDIN_ORGANIZATION_ACCESS !== "true") {
+    return scopes;
+  }
+  return [...scopes, ...linkedInOrganizationScopes];
+}
+
 export function isProvider(value: string): value is IntegrationProvider {
   return value in providerConfig;
 }

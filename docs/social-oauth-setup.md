@@ -138,11 +138,12 @@ ProReach uses Authorization Code + PKCE and requests `tweet.read`, `tweet.write`
    LINKEDIN_CLIENT_ID=<Client ID>
    LINKEDIN_CLIENT_SECRET=<Primary Client Secret>
    LINKEDIN_API_VERSION=202606
+   LINKEDIN_ORGANIZATION_ACCESS=false
    ```
 
 5. Add/request the **Sign In with LinkedIn using OpenID Connect** and **Share on LinkedIn** products for personal profile identity/posting.
-6. Apply for **Community Management API** access to publish to company Pages. Page publishing requires `rw_organization_admin` and `w_organization_social`; access is not automatically granted merely because the app exists.
-7. Connect using a LinkedIn member who administers the target Page. ProReach discovers eligible Pages and asks which destination to enable.
+6. Keep `LINKEDIN_ORGANIZATION_ACCESS=false` until LinkedIn has approved **Community Management API** access. This makes ProReach request only `openid`, `profile`, and `w_member_social`, which support personal-profile publishing without restricted organization scopes.
+7. After LinkedIn approves Community Management API access, set `LINKEDIN_ORGANIZATION_ACCESS=true` and redeploy. Page publishing then requests `rw_organization_admin` and `w_organization_social` and discovers Pages administered by the connected member.
 
 LinkedIn documents credentials and HTTPS redirect URLs in its 3-legged OAuth guide: <https://learn.microsoft.com/en-us/linkedin/shared/authentication/authorization-code-flow>. Community Management access is applied for under the app's Products tab: <https://learn.microsoft.com/en-us/linkedin/marketing/quick-start>.
 

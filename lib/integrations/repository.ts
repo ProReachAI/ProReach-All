@@ -10,7 +10,9 @@ const notes: Record<IntegrationProvider, string> = {
   instagram: "Direct professional-account publishing — no Facebook Page link required",
   threads: "Threads profile publishing",
   x: "X OAuth 2.0 publishing with offline access",
-  linkedin: "LinkedIn company Page publishing through the reviewed Community Management API",
+  linkedin: process.env.LINKEDIN_ORGANIZATION_ACCESS === "true"
+    ? "LinkedIn profile and approved company Page publishing"
+    : "LinkedIn personal-profile publishing; company Pages require approved Community Management API access",
 };
 
 export async function createOAuthSession(input: {

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { completeAuthorization, providerConfig } from "./providers";
+import { authorizationScopes, completeAuthorization, providerConfig } from "./providers";
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
   status,
@@ -20,6 +20,7 @@ describe("OAuth provider completion", () => {
     process.env.THREADS_CLIENT_SECRET = "threads-secret";
     process.env.LINKEDIN_CLIENT_ID = "linkedin-id";
     process.env.LINKEDIN_CLIENT_SECRET = "linkedin-secret";
+    delete process.env.LINKEDIN_ORGANIZATION_ACCESS;
   });
 
   afterEach(() => vi.unstubAllGlobals());
@@ -128,6 +129,18 @@ describe("OAuth provider completion", () => {
 
   it("requests only self-service LinkedIn permissions by default", () => {
     expect(providerConfig.linkedin.scopes).toEqual(["openid", "profile", "w_member_social"]);
+    expect(authorizationScopes("linkedin")).toEqual(["openid", "profile", "w_member_social"]);
+  });
+
+  it("requests restricted LinkedIn organization permissions only after explicit enablement", () => {
+    process.env.LINKEDIN_ORGANIZATION_ACCESS = "true";
+    expect(authorizationScopes("linkedin")).toEqual([
+      "openid",
+      "profile",
+      "w_member_social",
+      "rw_organization_admin",
+      "w_organization_social",
+    ]);
   });
 
   it("discovers administered LinkedIn company Pages as explicit publishing destinations", async () => {

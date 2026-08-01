@@ -33,7 +33,6 @@ const statusLabel: Record<SocialPost["status"], string> = {
 
 function oauthConnectionHref(provider: ConnectionSummary["provider"], projectId: string) {
   const query = new URLSearchParams({ project: projectId });
-  if (provider === "linkedin") query.set("mode", "organization");
   return `/api/oauth/${provider}?${query}`;
 }
 

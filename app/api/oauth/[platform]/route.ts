@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { assertEncryptionReady, createPkce, createState } from "@/lib/security/crypto";
 import { createOAuthSession } from "@/lib/integrations/repository";
-import { callbackUrl, getProviderCredentials, isProvider, providerConfig } from "@/lib/integrations/providers";
+import { authorizationScopes, callbackUrl, getProviderCredentials, isProvider, providerConfig } from "@/lib/integrations/providers";
 import { canonicalOAuthStartUrl } from "@/lib/integrations/oauth-origin";
 import { appOrigin, appUrl } from "@/lib/app-origin";
 import { createClient } from "@/lib/supabase/server";
@@ -34,9 +34,7 @@ export async function GET(request: Request, context: { params: Promise<{ platfor
     if (!userId || !projectId || !await getProject(userId, projectId)) {
       throw new Error("Choose a valid project before connecting a social account.");
     }
-    const scopes = value === "linkedin" && requestUrl.searchParams.get("mode") === "organization"
-      ? [...config.scopes, "rw_organization_admin", "w_organization_social"]
-      : config.scopes;
+    const scopes = authorizationScopes(value);
     const { clientId } = getProviderCredentials(value);
     await assertEncryptionReady();
     const state = createState();
